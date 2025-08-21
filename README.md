@@ -1,4 +1,4 @@
-# An AI Mental Health Companion 
+# AI Mental Health Companion 
 
 ## 🚀 Features
 
