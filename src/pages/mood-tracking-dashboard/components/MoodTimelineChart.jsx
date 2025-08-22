@@ -3,9 +3,21 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 import Button from '../../../components/ui/Button';
 
-const MoodTimelineChart = () => {
+const MoodTimelineChart = ({ moodData = [] }) => {
   const [language, setLanguage] = useState('fr');
   const [timeRange, setTimeRange] = useState('week');
+
+  const transformData = () => {
+    // Map entries to recharts format
+    return (moodData || []).slice().reverse().map(e => ({
+      date: e.entry_date,
+      mood:
+        e.mood_level === 'very_low' ? 1 :
+        e.mood_level === 'low' ? 2 :
+        e.mood_level === 'neutral' ? 3 :
+        e.mood_level === 'good' ? 4 : 5
+    }));
+  };
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || 'fr';

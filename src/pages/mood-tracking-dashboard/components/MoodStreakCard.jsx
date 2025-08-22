@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 
-const MoodStreakCard = () => {
+const MoodStreakCard = ({ moodStats = {} }) => {
   const [language, setLanguage] = useState('fr');
 
   useEffect(() => {

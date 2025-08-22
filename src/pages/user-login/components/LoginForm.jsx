@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -7,6 +8,8 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, authError, clearError } = useAuth();
   const [language, setLanguage] = useState('fr');
   const [formData, setFormData] = useState({
     emailOrPhone: '',
@@ -65,12 +68,7 @@ const LoginForm = () => {
 
   const t = translations?.[language];
 
-  // Mock credentials for testing
-  const mockCredentials = [
-    { emailOrPhone: 'user@serenity.ma', password: 'serenity123' },
-    { emailOrPhone: '+212 661 234 567', password: 'wellness456' },
-    { emailOrPhone: 'ahmed@gmail.com', password: 'mental789' }
-  ];
+  // Using Supabase email login; phone login is out-of-scope for now
 
   const validateForm = () => {
     const newErrors = {};
@@ -119,36 +117,24 @@ const LoginForm = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const isValidCredentials = mockCredentials?.some(
-        cred => cred?.emailOrPhone === formData?.emailOrPhone && cred?.password === formData?.password
-      );
-
-      if (isValidCredentials) {
-        // Store auth token and user data
-        localStorage.setItem('authToken', 'mock-jwt-token-' + Date.now());
-        localStorage.setItem('user', JSON.stringify({
-          id: 1,
-          name: 'Utilisateur',
-          email: formData?.emailOrPhone?.includes('@') ? formData?.emailOrPhone : 'user@serenity.ma',
-          phone: formData?.emailOrPhone?.startsWith('+212') ? formData?.emailOrPhone : null,
-          language: language,
-          joinedDate: new Date()?.toISOString()
-        }));
-
-        if (formData?.rememberMe) {
-          localStorage.setItem('rememberLogin', 'true');
-        }
-
-        navigate('/dashboard-home');
-      } else {
-        setErrors({ general: t?.invalidCredentials });
+    try {
+      clearError?.();
+      const isEmail = formData?.emailOrPhone?.includes('@');
+      if (!isEmail) {
+        setErrors({ general: t?.invalidEmail });
+        return;
       }
-      
+      const result = await signIn(formData?.emailOrPhone, formData?.password);
+      if (!result?.success) {
+        setErrors({ general: result?.error || t?.invalidCredentials });
+        return;
+      }
+
+      const from = location?.state?.from?.pathname || '/dashboard-home';
+      navigate(from, { replace: true });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -171,12 +157,12 @@ const LoginForm = () => {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {errors?.general && (
+  {(errors?.general || authError) && (
           <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
             <div className="flex items-center space-x-3">
               <Icon name="AlertCircle" size={20} color="var(--color-error)" />
               <p className="text-sm font-body text-error">
-                {errors?.general}
+    {errors?.general || authError}
               </p>
             </div>
           </div>

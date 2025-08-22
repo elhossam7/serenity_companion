@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/ui/Header';
 import BottomNavigation from '../../components/ui/BottomNavigation';
 import EmergencyOverlay from '../../components/ui/EmergencyOverlay';
@@ -12,6 +13,7 @@ import Button from '../../components/ui/Button';
 
 const AiPoweredJournaling = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [language, setLanguage] = useState('fr');
   const [journalContent, setJournalContent] = useState('');
   const [currentMood, setCurrentMood] = useState('neutral');
@@ -24,13 +26,6 @@ const AiPoweredJournaling = () => {
   const [isAiSuggesting, setIsAiSuggesting] = useState(false);
 
   useEffect(() => {
-    // Check authentication
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/user-login');
-      return;
-    }
-
     // Load saved language preference
     const savedLanguage = localStorage.getItem('language') || 'fr';
     setLanguage(savedLanguage);
@@ -43,7 +38,7 @@ const AiPoweredJournaling = () => {
 
     // Set up document direction
     document.documentElement?.setAttribute('dir', savedLanguage === 'ar' ? 'rtl' : 'ltr');
-  }, [navigate]);
+  }, [navigate, user]);
 
   useEffect(() => {
     // Update language when it changes globally

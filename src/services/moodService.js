@@ -5,6 +5,7 @@ export const moodService = {
   async createMoodEntry(moodData) {
     try {
       const { data, error } = await supabase?.from('mood_entries')?.insert({
+          user_id: moodData?.userId,
           mood_level: moodData?.moodLevel,
           energy_level: moodData?.energyLevel,
           stress_level: moodData?.stressLevel,
@@ -20,7 +21,7 @@ export const moodService = {
         throw error
       }
 
-      return { success: true, data }
+  return { success: true, data }
     } catch (error) {
       return { success: false, error: error?.message || 'Failed to create mood entry' }
     }

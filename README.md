@@ -14,19 +14,37 @@
 
 ## 📋 Prerequisites
 
-- Node.js (v14.x or higher)
+- Node.js (v18.x or higher)
 - npm or yarn
 
 ## 🛠️ Installation
 
-1. Install dependencies:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/elhossam7/serenity_companion.git
+   cd serenity_companion
+   ```
+
+2. **Set up environment variables:**
+   Create a `.env` file in the root of the project by copying the example file:
+   ```bash
+   cp .env.example .env
+   ```
+- Node.js 18 or higher (Vite 5 requires Node >= 18)
+
+   ```
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
+
+3. **Install dependencies:**
    ```bash
    npm install
    # or
    yarn install
    ```
    
-2. Start the development server:
+4. **Start the development server:**
    ```bash
    npm start
    # or
@@ -42,12 +60,18 @@ react_app/
 │   ├── components/     # Reusable UI components
 │   ├── pages/          # Page components
 │   ├── styles/         # Global styles and Tailwind configuration
-│   ├── App.jsx         # Main application component
-│   ├── Routes.jsx      # Application routes
-│   └── index.jsx       # Application entry point
-├── .env                # Environment variables
-├── index.html          # HTML template
-├── package.json        # Project dependencies and scripts
+4. Create your .env from the example and fill Supabase values:
+   ```bash
+   cp .env.example .env
+   # Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   npm start
+   ```
 ├── tailwind.config.js  # Tailwind CSS configuration
 └── vite.config.js      # Vite configuration
 ```
@@ -95,4 +119,6 @@ Build the application for production:
 ```bash
 npm run build
 ```
+
+If you see an error about missing Supabase variables, ensure `.env` is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 

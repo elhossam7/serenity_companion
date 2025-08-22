@@ -54,6 +54,7 @@ const QuickMoodEntry = ({ onMoodLogged }) => {
       setError('');
 
       const moodData = {
+        userId: user?.id,
         moodLevel: selectedMood,
         energyLevel,
         stressLevel,

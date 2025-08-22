@@ -3,6 +3,7 @@ import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
+import ProtectedRoute from './components/ProtectedRoute';
 import UserLogin from './pages/user-login';
 import MoodTrackingDashboard from './pages/mood-tracking-dashboard';
 import UserRegistration from './pages/user-registration';
@@ -15,13 +16,19 @@ const Routes = () => {
       <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
-        {/* Define your route here */}
-        <Route path="/" element={<AiPoweredJournaling />} />
+        {/* Public routes */}
         <Route path="/user-login" element={<UserLogin />} />
-        <Route path="/mood-tracking-dashboard" element={<MoodTrackingDashboard />} />
         <Route path="/user-registration" element={<UserRegistration />} />
-        <Route path="/ai-powered-journaling" element={<AiPoweredJournaling />} />
-        <Route path="/dashboard-home" element={<DashboardHome />} />
+
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}> 
+          <Route path="/" element={<AiPoweredJournaling />} />
+          <Route path="/ai-powered-journaling" element={<AiPoweredJournaling />} />
+          <Route path="/mood-tracking-dashboard" element={<MoodTrackingDashboard />} />
+          <Route path="/dashboard-home" element={<DashboardHome />} />
+        </Route>
+
+        {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

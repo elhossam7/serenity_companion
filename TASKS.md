@@ -223,6 +223,157 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ---
 
+## P2 — Additional Features and Components (Identified from MVP Analysis)
+
+- [ ] User profile and settings page
+  - Scope: Missing `/profile` and `/settings` routes referenced in Header dropdown.
+  - Actions:
+    - Create profile management page with photo upload, emergency contacts, preferences.
+    - Settings page for notifications, privacy, language, theme preferences.
+    - Wire to `user_profiles` table and profile completion percentage.
+  - Acceptance: Profile editing works; settings persist; completion percentage updates.
+
+- [ ] AI Chat Support page implementation
+  - Scope: Routes reference `/ai-chat-support` but page doesn't exist.
+  - Actions:
+    - Create chat interface component with message history.
+    - Integrate with AI backend for conversational support.
+    - Add crisis detection and escalation to emergency resources.
+  - Acceptance: Chat interface functional; messages persist; crisis detection works.
+
+- [ ] Advanced dashboard components enhancement
+  - Scope: Several dashboard components use mock data with TODO patterns.
+  - Actions:
+    - Complete `WellnessSnapshot` with real wellness goals integration.
+    - Enhance `PersonalizedRecommendations` with ML-based suggestions.
+    - Add real activity tracking to `RecentActivity` component.
+  - Acceptance: Dashboard shows live wellness metrics and personalized content.
+
+- [ ] Therapist support session booking
+  - Scope: Database has `support_sessions` table but no UI for booking.
+  - Actions:
+    - Create therapist directory and booking interface.
+    - Calendar integration for session scheduling.
+    - Session management (reschedule, cancel, join virtual sessions).
+  - Acceptance: Users can book, manage, and attend therapy sessions.
+
+- [ ] Advanced mood analytics and insights
+  - Scope: `AIInsightsPanel` and mood components need ML integration.
+  - Actions:
+    - Implement pattern recognition for mood triggers and correlations.
+    - Advanced charting with mood patterns, weather, activities correlation.
+    - Personalized insights based on user's cultural and lifestyle context.
+  - Acceptance: AI provides meaningful, culturally-aware mood insights.
+
+- [ ] Wellness goals and progress tracking
+  - Scope: Database has `wellness_goals` but limited UI integration.
+  - Actions:
+    - Goal creation wizard with templates (meditation streaks, mood consistency, etc.).
+    - Progress visualization and milestone celebrations.
+    - Social support features (anonymous goal sharing, community challenges).
+  - Acceptance: Users can set, track, and achieve wellness goals with motivation.
+
+- [ ] Enhanced journaling features
+  - Scope: Current journal editor is basic; missing advanced features.
+  - Actions:
+    - Rich text editor with formatting, attachments, voice notes.
+    - Template prompts for different journal types (gratitude, reflection, problem-solving).
+    - Mood-before-after tracking with sentiment analysis.
+    - Journal analytics (writing patterns, sentiment trends, topic analysis).
+  - Acceptance: Full-featured journaling with insights and progress tracking.
+
+- [ ] Cultural adaptation and localization enhancements
+  - Scope: App has basic FR/AR translations but needs deeper cultural features.
+  - Actions:
+    - Islamic calendar integration for mood patterns during Ramadan, religious holidays.
+    - Cultural-specific wellness recommendations (family therapy emphasis, community support).
+    - Regional mental health resources and emergency contacts.
+    - Right-to-left (RTL) layout optimization for Arabic interface.
+  - Acceptance: App feels native to Moroccan users with cultural sensitivity.
+
+- [ ] Advanced accessibility and inclusive design
+  - Scope: UI components need accessibility improvements.
+  - Actions:
+    - ARIA labels, keyboard navigation, screen reader optimization.
+    - High contrast mode, font size preferences, color-blind friendly design.
+    - Voice control support for journaling and mood logging.
+    - Cognitive accessibility features (simplified modes, memory aids).
+  - Acceptance: WCAG 2.1 AA compliance; usable by users with diverse abilities.
+
+- [ ] Data export and backup features
+  - Scope: `JournalToolbar` has export options but limited implementation.
+  - Actions:
+    - Comprehensive data export (PDF, CSV, JSON) with privacy controls.
+    - Automated backup to user's cloud storage (with encryption).
+    - Data portability for switching between devices or services.
+    - GDPR-compliant data deletion and download requests.
+  - Acceptance: Users own their data with full export/import capabilities.
+
+- [ ] Offline-first capabilities and sync
+  - Scope: Current app requires internet; need offline functionality.
+  - Actions:
+    - IndexedDB for offline mood logging and journaling.
+    - Service worker with intelligent sync when connection returns.
+    - Conflict resolution for offline edits.
+    - Offline-available breathing exercises and crisis resources.
+  - Acceptance: Core features work offline; seamless sync when online.
+
+- [ ] Advanced notification and reminder system
+  - Scope: Basic mood reminder in `BottomNavigation`; needs expansion.
+  - Actions:
+    - Smart notification timing based on user patterns and preferences.
+    - Personalized reminder content (motivational quotes, check-ins, goals).
+    - Crisis intervention notifications for concerning patterns.
+    - Respectful notification cadence with easy opt-out controls.
+  - Acceptance: Notifications improve engagement without being intrusive.
+
+- [ ] Social and community features (optional/Phase 2)
+  - Scope: Mental health often benefits from community support.
+  - Actions:
+    - Anonymous peer support groups with moderation.
+    - Shared challenges and group wellness goals.
+    - Mentorship matching (recovered users helping others).
+    - Privacy-first design with granular sharing controls.
+  - Acceptance: Safe, supportive community features with strong privacy protections.
+
+---
+
+## P3 — Advanced Features and Optimizations (Additional)
+
+- [ ] Advanced AI and ML features
+  - Actions:
+    - Predictive mood modeling to suggest preventive interventions.
+    - Natural language processing for journal sentiment and topic analysis.
+    - Personalized content recommendation engine.
+    - Voice-to-text journaling with emotion detection.
+  - Acceptance: AI provides proactive, personalized mental health insights.
+
+- [ ] Integration with health ecosystem
+  - Actions:
+    - Wearable device integration (mood correlation with sleep, activity).
+    - Healthcare provider dashboards (with consent) for therapy sessions.
+    - Integration with Moroccan health insurance systems.
+    - Telemedicine platform connections for psychiatric consultations.
+  - Acceptance: App integrates seamlessly with user's broader health journey.
+
+- [ ] Advanced security and compliance
+  - Actions:
+    - End-to-end encryption for all sensitive data.
+    - Multi-factor authentication with biometric options.
+    - Regular security audits and penetration testing.
+    - Compliance with Moroccan data protection laws and healthcare regulations.
+  - Acceptance: Bank-level security with transparent privacy practices.
+
+- [ ] Performance optimization and scalability
+  - Actions:
+    - Database query optimization and indexing strategy.
+    - CDN implementation for static assets and cultural content.
+    - Lazy loading and code splitting for improved initial load times.
+    - Scalable architecture for handling thousands of concurrent users.
+  - Acceptance: App performs smoothly under load with fast response times.
+
+---
+
 ## Acceptance and Validation (quality gates)
 
 - Build: Vite dev and build succeed without env errors.

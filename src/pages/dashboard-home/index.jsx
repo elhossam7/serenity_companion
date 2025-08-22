@@ -16,19 +16,8 @@ const DashboardHome = () => {
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || 'fr';
     setLanguage(savedLanguage);
-
-    // Check authentication
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      // Redirect to login if not authenticated
-      window.location.href = '/user-login';
-      return;
-    }
-
-    // Simulate loading
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+  // Simulate loading
+  const t = setTimeout(() => setIsLoading(false), 600);
 
     // Mock emergency detection (for demo purposes)
     const checkEmergencyTriggers = () => {
@@ -44,7 +33,10 @@ const DashboardHome = () => {
     // Check for emergency triggers every 30 seconds (in real app, this would be more sophisticated)
     const emergencyInterval = setInterval(checkEmergencyTriggers, 30000);
 
-    return () => clearInterval(emergencyInterval);
+    return () => {
+      clearTimeout(t);
+      clearInterval(emergencyInterval);
+    }
   }, []);
 
   const handleEmergencyClose = () => {

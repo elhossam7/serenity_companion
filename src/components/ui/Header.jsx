@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
   const [language, setLanguage] = useState('fr');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState({ name: 'Utilisateur', avatar: null });
@@ -33,9 +35,8 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+  const handleLogout = async () => {
+    await signOut();
     navigate('/user-login');
   };
 

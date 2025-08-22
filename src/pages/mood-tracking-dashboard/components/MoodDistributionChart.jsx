@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import Icon from '../../../components/AppIcon';
 
-const MoodDistributionChart = () => {
+const MoodDistributionChart = ({ moodStats = {} }) => {
   const [language, setLanguage] = useState('fr');
 
   useEffect(() => {
