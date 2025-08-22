@@ -13,9 +13,11 @@ export default defineConfig({
   },
   plugins: [tsconfigPaths(), react(), tagger()],
   server: {
-    port: "4028",
-    host: "0.0.0.0",
-    strictPort: true,
-    allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
+  // Use a fixed port if available; fallback automatically if in use
+  port: 4028,
+  host: "0.0.0.0",
+  strictPort: false,
+  // If you need to expose the dev server behind a reverse proxy, add allowed hosts here.
+  // allowedHosts: ['your-domain.com']
   }
 });

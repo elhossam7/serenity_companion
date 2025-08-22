@@ -26,16 +26,14 @@
    ```
 
 2. **Set up environment variables:**
-   Create a `.env` file in the root of the project by copying the example file:
+   Create a `.env` file in the root of the project by copying the example and fill your Supabase values:
    ```bash
-   cp .env.example .env
+   # Windows PowerShell
+   copy .env.example .env
    ```
-- Node.js 18 or higher (Vite 5 requires Node >= 18)
-
-   ```
-   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-   ```
+   Then edit `.env` and set:
+   - `VITE_SUPABASE_URL=https://your-project-ref.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY=your-supabase-anon-key`
 
 3. **Install dependencies:**
    ```bash
@@ -46,9 +44,9 @@
    
 4. **Start the development server:**
    ```bash
-   npm start
+   npm run dev
    # or
-   yarn start
+   npm start
    ```
 
 ## 📁 Project Structure
@@ -121,4 +119,5 @@ npm run build
 ```
 
 If you see an error about missing Supabase variables, ensure `.env` is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+This app requires Node.js 18+.
 
