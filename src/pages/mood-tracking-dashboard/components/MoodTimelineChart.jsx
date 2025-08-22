@@ -55,34 +55,10 @@ const MoodTimelineChart = ({ moodData = [] }) => {
 
   const t = translations?.[language];
 
-  // Mock mood data for different time ranges
-  const moodData = {
-    week: [
-      { date: '15/08', mood: 4, label: 'Lun' },
-      { date: '16/08', mood: 3, label: 'Mar' },
-      { date: '17/08', mood: 5, label: 'Mer' },
-      { date: '18/08', mood: 4, label: 'Jeu' },
-      { date: '19/08', mood: 3, label: 'Ven' },
-      { date: '20/08', mood: 4, label: 'Sam' },
-      { date: '21/08', mood: 5, label: 'Dim' }
-    ],
-    month: [
-      { date: 'S1', mood: 3.5, label: 'Semaine 1' },
-      { date: 'S2', mood: 4.2, label: 'Semaine 2' },
-      { date: 'S3', mood: 3.8, label: 'Semaine 3' },
-      { date: 'S4', mood: 4.5, label: 'Semaine 4' }
-    ],
-    year: [
-      { date: 'Jan', mood: 3.2, label: 'Janvier' },
-      { date: 'Fév', mood: 3.8, label: 'Février' },
-      { date: 'Mar', mood: 4.1, label: 'Mars' },
-      { date: 'Avr', mood: 3.9, label: 'Avril' },
-      { date: 'Mai', mood: 4.3, label: 'Mai' },
-      { date: 'Jun', mood: 4.0, label: 'Juin' },
-      { date: 'Jul', mood: 4.2, label: 'Juillet' },
-      { date: 'Aoû', mood: 4.1, label: 'Août' }
-    ]
-  };
+  // Build chart data from prop and filter by time range (last 7/30/365 points)
+  const allTransformed = transformData();
+  const sliceCount = timeRange === 'year' ? 365 : timeRange === 'month' ? 30 : 7;
+  const chartData = allTransformed.slice(-sliceCount);
 
   const getMoodLabel = (value) => {
     if (value >= 4.5) return t?.excellent;
@@ -145,7 +121,7 @@ const MoodTimelineChart = ({ moodData = [] }) => {
       </div>
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={moodData?.[timeRange]} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis 
               dataKey="date" 
