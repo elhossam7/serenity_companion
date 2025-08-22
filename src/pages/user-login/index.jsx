@@ -14,13 +14,7 @@ const UserLogin = () => {
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || 'fr';
     setLanguage(savedLanguage);
-
-    // Check if user is already logged in
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      navigate('/dashboard-home');
-    }
-  }, [navigate]);
+  }, []);
 
   const translations = {
     fr: {

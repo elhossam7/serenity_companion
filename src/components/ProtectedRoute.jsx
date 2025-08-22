@@ -18,7 +18,19 @@ const ProtectedRoute = () => {
   }
 
   if (!user) {
-    return <Navigate to="/user-login" state={{ from: location }} replace />;
+    // Avoid potential loops by providing a stable state payload
+    const fromPath = location?.pathname || '/';
+    // If somehow mounted on public routes, don't re-navigate continuously
+    if (fromPath === '/user-login' || fromPath === '/user-registration') {
+      return <Navigate to="/user-login" replace />;
+    }
+    return (
+      <Navigate
+        to="/user-login"
+        state={{ from: { pathname: fromPath } }}
+        replace
+      />
+    );
   }
 
   return <Outlet />;
