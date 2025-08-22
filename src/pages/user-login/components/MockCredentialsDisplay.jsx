@@ -67,8 +67,7 @@ const MockCredentialsDisplay = () => {
   const copyToClipboard = async (text, type) => {
     try {
       await navigator.clipboard?.writeText(text);
-      // Show temporary feedback (in a real app, you'd use a toast notification)
-      console.log(`${type} copied: ${text}`);
+  // TODO: Replace with a toast notification
     } catch (err) {
       console.error('Failed to copy:', err);
     }

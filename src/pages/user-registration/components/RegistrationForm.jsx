@@ -207,8 +207,7 @@ const RegistrationForm = () => {
   };
 
   const handleSocialLogin = (provider) => {
-    // Mock social login
-    console.log(`Social login with ${provider}`);
+    // TODO: Integrate real social auth via Supabase
   };
 
   const getStrengthColor = () => {
@@ -254,6 +253,7 @@ const RegistrationForm = () => {
             onChange={(e) => handleInputChange('fullName', e?.target?.value)}
             error={errors?.fullName}
             required
+            autoComplete="name"
           />
 
           <Input
@@ -264,6 +264,7 @@ const RegistrationForm = () => {
             onChange={(e) => handleInputChange('email', e?.target?.value)}
             error={errors?.email}
             required
+            autoComplete="email"
           />
 
           <Input
@@ -274,6 +275,7 @@ const RegistrationForm = () => {
             onChange={(e) => handleInputChange('phone', e?.target?.value)}
             error={errors?.phone}
             required
+            autoComplete="tel"
           />
         </div>
 
@@ -292,6 +294,7 @@ const RegistrationForm = () => {
               onChange={(e) => handleInputChange('password', e?.target?.value)}
               error={errors?.password}
               required
+              autoComplete="new-password"
             />
             
             {formData?.password && (
@@ -326,6 +329,7 @@ const RegistrationForm = () => {
             onChange={(e) => handleInputChange('confirmPassword', e?.target?.value)}
             error={errors?.confirmPassword}
             required
+            autoComplete="new-password"
           />
         </div>
 

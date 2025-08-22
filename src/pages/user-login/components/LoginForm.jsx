@@ -177,6 +177,7 @@ const LoginForm = () => {
             onChange={(e) => handleInputChange('emailOrPhone', e?.target?.value)}
             error={errors?.emailOrPhone}
             required
+            autoComplete="username"
             className="w-full"
           />
 
@@ -189,6 +190,7 @@ const LoginForm = () => {
               onChange={(e) => handleInputChange('password', e?.target?.value)}
               error={errors?.password}
               required
+              autoComplete="current-password"
               className="w-full pr-12"
             />
             <button
