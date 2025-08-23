@@ -4,11 +4,13 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import { useAuth } from '../../../contexts/AuthContext';
 
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('fr');
+  const { signUp, updateProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -22,6 +24,7 @@ const RegistrationForm = () => {
     agreeToPrivacy: false
   });
   const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   useEffect(() => {
@@ -179,28 +182,44 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
-    
+    setErrors({});
+    setSuccess('');
+
     try {
-      // Mock registration process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock successful registration
-      localStorage.setItem('authToken', 'mock-auth-token-12345');
-      localStorage.setItem('user', JSON.stringify({
-        id: 'user-123',
-        name: formData?.fullName,
-        email: formData?.email,
+      // Real Supabase signup; DB trigger will create user_profiles with metadata
+      const displayName = formData?.fullName?.split(' ')?.[0] || '';
+      const result = await signUp?.(formData?.email, formData?.password, {
+        fullName: formData?.fullName,
+        displayName,
         language: formData?.primaryLanguage,
-        location: formData?.location
-      }));
-      
-      navigate('/dashboard-home');
+      });
+
+      if (!result?.success) {
+        setErrors({ submit: result?.error || (language === 'fr' ? "Échec de l'inscription" : 'فشل إنشاء الحساب') });
+        return;
+      }
+
+      // Best-effort profile enrichment (requires session; skip if pending email confirmation)
+      try {
+        await updateProfile?.({
+          phone_number: formData?.phone,
+          language: formData?.primaryLanguage,
+        });
+      } catch (_) {
+        // Ignore if not authenticated yet
+      }
+
+      setSuccess(language === 'fr'
+        ? "Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous."
+        : 'تم إنشاء الحساب. رجاءً تحقق من بريدك الإلكتروني للتأكيد ثم سجّل الدخول.');
+
+      setTimeout(() => navigate('/user-login', { replace: true }), 1500);
     } catch (error) {
-      setErrors({ submit: language === 'fr' ? 'Erreur lors de l\'inscription' : 'خطأ في التسجيل' });
+      setErrors({ submit: language === 'fr' ? "Erreur lors de l'inscription" : 'خطأ في التسجيل' });
     } finally {
       setLoading(false);
     }
@@ -239,6 +258,11 @@ const RegistrationForm = () => {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {success && (
+          <div className="p-3 bg-success/10 border border-success/20 rounded-md text-success text-sm text-center font-caption">
+            {success}
+          </div>
+        )}
         {/* Personal Information Section */}
         <div className="space-y-4">
           <h2 className="text-lg font-heading font-medium text-foreground border-b border-border pb-2">
