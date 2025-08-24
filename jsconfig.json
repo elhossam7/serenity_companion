@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src"
-  }
+    "baseUrl": "./src",
+    "checkJs": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "exclude": ["node_modules", "dist"]
 }

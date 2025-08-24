@@ -8,6 +8,7 @@ import UserLogin from './pages/user-login';
 import MoodTrackingDashboard from './pages/mood-tracking-dashboard';
 import UserRegistration from './pages/user-registration';
 import AiPoweredJournaling from './pages/ai-powered-journaling';
+import ResetPasswordPage from './pages/reset-password';
 import DashboardHome from './pages/dashboard-home';
 
 const Routes = () => {
@@ -18,7 +19,8 @@ const Routes = () => {
       <RouterRoutes>
         {/* Public routes */}
         <Route path="/user-login" element={<UserLogin />} />
-        <Route path="/user-registration" element={<UserRegistration />} />
+  <Route path="/user-registration" element={<UserRegistration />} />
+  <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}> 

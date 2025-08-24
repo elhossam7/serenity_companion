@@ -5,6 +5,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import ForgotPasswordInline from '../../../components/auth/ForgotPasswordInline';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -137,10 +138,7 @@ const LoginForm = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    // Navigate to forgot password flow (not implemented in this scope)
-    console.log('Navigate to forgot password');
-  };
+  // Forgot password handled via inline component
 
   const handleRegister = () => {
     navigate('/user-registration');
@@ -231,13 +229,7 @@ const LoginForm = () => {
         </Button>
 
         <div className="text-center">
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            className="text-sm font-body text-primary hover:text-primary/80 transition-colors"
-          >
-            {t?.forgotPassword}
-          </button>
+          <ForgotPasswordInline defaultEmail={formData?.emailOrPhone?.includes('@') ? formData?.emailOrPhone : ''} />
         </div>
 
         <div className="text-center pt-4 border-t border-border">

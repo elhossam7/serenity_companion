@@ -30,6 +30,22 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes - NEVER ASYNC callback
     const { data: { subscription } } = supabase?.auth?.onAuthStateChange(
       (event, session) => {
+        // Explicitly handle recovery deep-link: ensure user lands on reset page
+        if (event === 'PASSWORD_RECOVERY') {
+          try {
+            if (typeof window !== 'undefined') {
+              try { window.sessionStorage?.setItem('isPasswordRecovery', '1') } catch (_) {}
+            }
+            if (typeof window !== 'undefined') {
+              const url = new URL(window.location.href)
+              if (url.pathname !== '/reset-password') {
+                url.pathname = '/reset-password'
+                // preserve existing query/hash from Supabase link
+                window.history.replaceState(window.history.state, '', url.toString())
+              }
+            }
+          } catch (_) {}
+        }
         if (session?.user) {
           setUser(session?.user)
           fetchUserProfile(session?.user?.id)  // Fire-and-forget, NO AWAIT
@@ -174,6 +190,58 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Send a new confirmation email to a user who signed up but didn't confirm
+  const resendEmailConfirmation = async (email) => {
+    if (!email) return { success: false, error: 'Email is required' }
+    try {
+      const { error } = await supabase?.auth?.resend({ type: 'signup', email })
+      if (error) return { success: false, error: error?.message }
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Failed to resend confirmation email' }
+    }
+  }
+
+  // Request a password reset email; user will follow link to set new password
+  const requestPasswordReset = async (email, redirectTo) => {
+    if (!email) return { success: false, error: 'Email is required' }
+    try {
+      const envRedirect = import.meta?.env?.VITE_AUTH_REDIRECT_URL
+      const raw = (redirectTo || envRedirect || '').toString().trim()
+      let redirectAbs
+      if (raw) {
+        redirectAbs = /^https?:\/\//i.test(raw)
+          ? raw
+          : new URL(raw, window?.location?.origin).toString()
+        console.debug('[auth] Using redirectTo:', redirectAbs)
+      } else {
+        console.debug('[auth] No redirectTo provided; falling back to Supabase Site URL')
+      }
+
+      const { error } = await supabase?.auth?.resetPasswordForEmail(
+        email,
+        redirectAbs ? { redirectTo: redirectAbs } : undefined
+      )
+      if (error) return { success: false, error: error?.message }
+      return { success: true }
+    } catch (error) {
+      console.error('[auth] requestPasswordReset error', error)
+      return { success: false, error: 'Failed to request password reset' }
+    }
+  }
+
+  // Complete password update after following the Supabase email link
+  const updatePassword = async (newPassword) => {
+    if (!newPassword) return { success: false, error: 'Password is required' }
+    try {
+      const { error } = await supabase?.auth?.updateUser({ password: newPassword })
+      if (error) return { success: false, error: error?.message }
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Failed to update password' }
+    }
+  }
+
   const value = {
     user,
     userProfile,
@@ -183,6 +251,9 @@ export const AuthProvider = ({ children }) => {
     signIn,
     signOut,
     updateProfile,
+  resendEmailConfirmation,
+  requestPasswordReset,
+  updatePassword,
     clearError: () => setAuthError('')
   }
 

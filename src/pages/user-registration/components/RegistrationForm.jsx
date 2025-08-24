@@ -4,6 +4,7 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import Select from '../../../components/ui/Select';
 import { Checkbox } from '../../../components/ui/Checkbox';
+import ResendConfirmationInline from '../../../components/auth/ResendConfirmationInline';
 import { useAuth } from '../../../contexts/AuthContext';
 
 
@@ -213,11 +214,11 @@ const RegistrationForm = () => {
         // Ignore if not authenticated yet
       }
 
-      setSuccess(language === 'fr'
+  setSuccess(language === 'fr'
         ? "Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous."
         : 'تم إنشاء الحساب. رجاءً تحقق من بريدك الإلكتروني للتأكيد ثم سجّل الدخول.');
 
-      setTimeout(() => navigate('/user-login', { replace: true }), 1500);
+  setTimeout(() => navigate('/user-login', { replace: true }), 5000);
     } catch (error) {
       setErrors({ submit: language === 'fr' ? "Erreur lors de l'inscription" : 'خطأ في التسجيل' });
     } finally {
@@ -261,6 +262,11 @@ const RegistrationForm = () => {
         {success && (
           <div className="p-3 bg-success/10 border border-success/20 rounded-md text-success text-sm text-center font-caption">
             {success}
+          </div>
+        )}
+        {success && (
+          <div className="text-center">
+            <ResendConfirmationInline email={formData?.email} />
           </div>
         )}
         {/* Personal Information Section */}
