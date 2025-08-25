@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import Header from '../../components/ui/Header'
-import BottomNavigation from '../../components/ui/BottomNavigation'
 import { useAuth } from '../../contexts/AuthContext'
 
 const ResetPasswordPage = () => {
@@ -79,12 +77,12 @@ const ResetPasswordPage = () => {
       return
     }
     setStatus('success')
+  try { sessionStorage.removeItem('isPasswordRecovery') } catch (_) {}
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-16 pb-20 md:pb-8">
+      <main className="pt-10 pb-10">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-6 shadow-soft-lg cultural-pattern">
             {fromRecovery && (
@@ -135,8 +133,7 @@ const ResetPasswordPage = () => {
             )}
           </div>
         </div>
-      </main>
-      <BottomNavigation />
+  </main>
     </div>
   )
 }

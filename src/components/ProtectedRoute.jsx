@@ -6,6 +6,21 @@ const ProtectedRoute = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // If arriving from a recovery link, force navigation to the reset page.
+  // Be strict to avoid false positives after normal login.
+  try {
+    const url = new URL(window.location.href);
+    const hash = url.hash || '';
+    const hasRecoveryToken = /type=recovery/.test(hash) && /(access_token|code|token_hash)=/.test(hash);
+    const qsTypeRecovery = url.searchParams.get('type') === 'recovery';
+    const flag = window.sessionStorage.getItem('isPasswordRecovery') === '1';
+    const flagIsRelevant = flag && (location.pathname === '/auth/callback' || location.pathname === '/reset-password');
+    const isRecovery = hasRecoveryToken || qsTypeRecovery || flagIsRelevant;
+    if (isRecovery && location.pathname !== '/reset-password') {
+      return <Navigate to={`/reset-password${url.search || ''}${url.hash || ''}`} replace />;
+    }
+  } catch (_) {}
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

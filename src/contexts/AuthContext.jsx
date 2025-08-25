@@ -18,6 +18,28 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState('')
 
   useEffect(() => {
+    // Proactively detect recovery callback in the URL and route to /reset-password
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+  const hashHasRecovery = /type=recovery/.test(url.hash || '') && /(access_token|code|token_hash)=/.test(url.hash || '')
+  const searchHasRecovery = url.searchParams?.get('type') === 'recovery'
+        if (hashHasRecovery || searchHasRecovery) {
+          try { window.sessionStorage?.setItem('isPasswordRecovery', '1') } catch (_) {}
+          // If we're already on /auth/callback, let that page handle navigation.
+          if (url.pathname !== '/reset-password' && url.pathname !== '/auth/callback') {
+            // Route through the callback page to centralize logic.
+            url.pathname = '/auth/callback'
+            window.history.replaceState(window.history.state, '', url.toString())
+            try { window.dispatchEvent(new PopStateEvent('popstate')) } catch (_) {}
+          }
+        } else {
+          // No recovery in URL; clear any stale flag on navigation to other pages
+          try { window.sessionStorage?.removeItem('isPasswordRecovery') } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
     // Get initial session - Use Promise chain
     supabase?.auth?.getSession()?.then(({ data: { session } }) => {
         if (session?.user) {
@@ -31,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase?.auth?.onAuthStateChange(
       (event, session) => {
         // Explicitly handle recovery deep-link: ensure user lands on reset page
-        if (event === 'PASSWORD_RECOVERY') {
+  if (event === 'PASSWORD_RECOVERY') {
           try {
             if (typeof window !== 'undefined') {
               try { window.sessionStorage?.setItem('isPasswordRecovery', '1') } catch (_) {}
@@ -41,7 +63,8 @@ export const AuthProvider = ({ children }) => {
               if (url.pathname !== '/reset-password') {
                 url.pathname = '/reset-password'
                 // preserve existing query/hash from Supabase link
-                window.history.replaceState(window.history.state, '', url.toString())
+    window.history.replaceState(window.history.state, '', url.toString())
+    try { window.dispatchEvent(new PopStateEvent('popstate')) } catch (_) {}
               }
             }
           } catch (_) {}
@@ -206,13 +229,22 @@ export const AuthProvider = ({ children }) => {
   const requestPasswordReset = async (email, redirectTo) => {
     if (!email) return { success: false, error: 'Email is required' }
     try {
-      const envRedirect = import.meta?.env?.VITE_AUTH_REDIRECT_URL
-      const raw = (redirectTo || envRedirect || '').toString().trim()
+  const envRedirect = import.meta?.env?.VITE_AUTH_REDIRECT_URL
+  const defaultCallback = new URL('/auth/callback', window?.location?.origin).toString()
+  const raw = (redirectTo || envRedirect || defaultCallback).toString().trim()
       let redirectAbs
       if (raw) {
         redirectAbs = /^https?:\/\//i.test(raw)
           ? raw
           : new URL(raw, window?.location?.origin).toString()
+        // Ensure we mark this as a recovery flow for the callback page
+        try {
+          const u = new URL(redirectAbs)
+          if (!u.searchParams.get('flow')) {
+            u.searchParams.set('flow', 'recovery')
+            redirectAbs = u.toString()
+          }
+        } catch (_) {}
         console.debug('[auth] Using redirectTo:', redirectAbs)
       } else {
         console.debug('[auth] No redirectTo provided; falling back to Supabase Site URL')

@@ -38,7 +38,7 @@ const ForgotPasswordInline = ({ defaultEmail = '' }) => {
           {language === 'ar' ? 'نسيت كلمة المرور؟' : 'Mot de passe oublié ?'}
         </button>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-2">
+        <div role="group" aria-label={language === 'ar' ? 'إعادة تعيين كلمة المرور' : 'Réinitialiser le mot de passe'} className="space-y-2">
           <input
             type="email"
             required
@@ -46,11 +46,13 @@ const ForgotPasswordInline = ({ defaultEmail = '' }) => {
             placeholder={language === 'ar' ? 'your@email.com' : 'votre@email.com'}
             value={email}
             onChange={(e) => setEmail(e?.target?.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(e) } }}
             className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm"
           />
           <div className="flex items-center space-x-2">
             <button
-              type="submit"
+              type="button"
+              onClick={onSubmit}
               className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm"
               disabled={status === 'loading'}
             >
@@ -70,7 +72,7 @@ const ForgotPasswordInline = ({ defaultEmail = '' }) => {
           {status === 'error' && (
             <p className="text-error text-sm">{error}</p>
           )}
-        </form>
+        </div>
       )}
     </div>
   )

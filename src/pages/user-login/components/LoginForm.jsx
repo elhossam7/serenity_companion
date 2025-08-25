@@ -26,6 +26,14 @@ const LoginForm = () => {
     setLanguage(savedLanguage);
   }, []);
 
+  const resetHint = React.useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const r = params.get('reset');
+    if (!r) return '';
+    if (r === 'expired') return language === 'ar' ? 'انتهت صلاحية رابط إعادة التعيين. اطلب رابطاً جديداً.' : 'Le lien de réinitialisation a expiré. Demandez un nouveau lien.';
+    return language === 'ar' ? 'رابط إعادة التعيين غير صالح. اطلب رابطاً جديداً.' : 'Le lien de réinitialisation est invalide. Demandez un nouveau lien.';
+  }, [location.search, language]);
+
   const translations = {
     fr: {
       title: 'Bon retour',
@@ -155,6 +163,11 @@ const LoginForm = () => {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+  {resetHint && (
+          <div className="p-3 bg-warning/10 border border-warning/20 rounded-md text-sm text-warning">
+            {resetHint}
+          </div>
+        )}
   {(errors?.general || authError) && (
           <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
             <div className="flex items-center space-x-3">
