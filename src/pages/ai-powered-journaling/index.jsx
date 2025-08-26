@@ -266,22 +266,24 @@ const AiPoweredJournaling = () => {
           </div>
         </div>
 
-        {/* Mobile Overlays */}
-        <EntryHistory
-          language={language}
-          isVisible={showEntryHistory}
-          onToggle={() => setShowEntryHistory(!showEntryHistory)}
-          onEntrySelect={handleEntrySelect}
-        />
+        {/* Mobile/Tablet Overlays (hidden on lg+ to avoid duplicates with desktop sidebars) */}
+        <div className="lg:hidden">
+          <EntryHistory
+            language={language}
+            isVisible={showEntryHistory}
+            onToggle={() => setShowEntryHistory(!showEntryHistory)}
+            onEntrySelect={handleEntrySelect}
+          />
 
-        <AiAssistant
-          language={language}
-          currentMood={currentMood}
-          isVisible={showAiAssistant}
-          onToggle={() => setShowAiAssistant(!showAiAssistant)}
-          onSuggestionGenerated={handleAiSuggestionGenerated}
-          journalContent={journalContent}
-        />
+          <AiAssistant
+            language={language}
+            currentMood={currentMood}
+            isVisible={showAiAssistant}
+            onToggle={() => setShowAiAssistant(!showAiAssistant)}
+            onSuggestionGenerated={handleAiSuggestionGenerated}
+            journalContent={journalContent}
+          />
+        </div>
       </main>
       <BottomNavigation />
       <EmergencyOverlay

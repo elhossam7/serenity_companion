@@ -57,6 +57,8 @@ type SuggestRequest = {
   language?: 'fr' | 'ar';
   mood?: string;
   content?: string; // current journal text
+  // Optional provider override per-request: 'auto' | 'gemini' | 'openai' | 'hybrid'
+  provider?: string;
 };
 
 type Suggestion = { id: string; type: 'continuation' | 'reflection' | 'support' | 'coping' | 'exploration'; content: string; icon: string };
@@ -154,8 +156,8 @@ serve(async (req) => {
   return new Response(JSON.stringify({ ...fallback, meta: { provider: 'fallback' } }), { status: 200, headers: corsHeaders });
     }
 
-    const system = buildSystemPrompt(language, mood);
-    const userPrompt = `${language === 'ar' ? 'نص اليوم' : "Texte d'aujourd'hui"}:
+  const system = buildSystemPrompt(language, mood);
+  const userPrompt = `${language === 'ar' ? 'نص اليوم' : "Texte d'aujourd'hui"}:
 """
 ${content}
 """
@@ -175,22 +177,17 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
         .filter(s => !isUnsafe(s.content).unsafe);
     };
 
-    // Prefer Gemini if key present, else OpenAI
-    if (geminiKey) {
-      const prompt = `${system}\n\n${userPrompt}`;
-      const gBody = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 180 }
-      };
-  const gRes = await fetch(`${getGeminiUrl()}?key=${geminiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(gBody)
-      });
-      if (!gRes.ok) {
-        const errTxt = await gRes.text();
-        console.error('Gemini error:', errTxt);
-      } else {
+    // Helpers to call providers uniformly
+    const callGemini = async (): Promise<{ suggestions: Suggestion[]; tokens: number; error?: string }> => {
+      if (!geminiKey) return { suggestions: [], tokens: 0 };
+      try {
+        const prompt = `${system}\n\n${userPrompt}`;
+        const gBody = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 180 } };
+        const gRes = await fetch(`${getGeminiUrl()}?key=${geminiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gBody) });
+        if (!gRes.ok) {
+          const errTxt = await gRes.text();
+          return { suggestions: [], tokens: 0, error: errTxt };
+        }
         const gJson = await gRes.json();
         const raw = gJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
         let parsed: SuggestResponse | null = null;
@@ -200,37 +197,23 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
           const jsonSlice = start >= 0 && end >= 0 ? raw.slice(start, end + 1) : '{}';
           parsed = JSON.parse(jsonSlice);
         } catch (e) {
-          console.warn('Failed to parse Gemini JSON:', e);
+          // fallthrough
         }
-        const cleaned = toCleaned(parsed);
-        if (cleaned.length > 0) {
-          try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: gJson?.usageMetadata?.totalTokenCount || 0 }); } catch {}
-          return new Response(JSON.stringify({ suggestions: cleaned, meta: { provider: 'gemini' } }), { status: 200, headers: corsHeaders });
-        }
+        return { suggestions: toCleaned(parsed), tokens: gJson?.usageMetadata?.totalTokenCount || 0 };
+      } catch (e: any) {
+        return { suggestions: [], tokens: 0, error: String(e?.message || e) };
       }
-      // fall through to OpenAI or fallback if Gemini fails to produce
-    }
+    };
 
-    if (openaiKey) {
-      const body = {
-        model: 'gpt-4o-mini',
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 180
-      };
-      const aiRes = await fetch(OPENAI_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-      if (aiRes.ok) {
+    const callOpenAI = async (): Promise<{ suggestions: Suggestion[]; tokens: number; error?: string }> => {
+      if (!openaiKey) return { suggestions: [], tokens: 0 };
+      try {
+        const body = { model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: userPrompt }], temperature: 0.7, max_tokens: 180 };
+        const aiRes = await fetch(OPENAI_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!aiRes.ok) {
+          const errTxt = await aiRes.text();
+          return { suggestions: [], tokens: 0, error: errTxt };
+        }
         const aiJson = await aiRes.json();
         const raw = aiJson?.choices?.[0]?.message?.content?.trim() || '';
         let parsed: SuggestResponse | null = null;
@@ -240,16 +223,71 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
           const jsonSlice = start >= 0 && end >= 0 ? raw.slice(start, end + 1) : '{}';
           parsed = JSON.parse(jsonSlice);
         } catch (e) {
-          console.warn('Failed to parse provider JSON:', e);
+          // fallthrough
         }
-        const cleaned = toCleaned(parsed);
-        if (cleaned.length > 0) {
-          try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: aiJson?.usage?.total_tokens || 0 }); } catch {}
-          return new Response(JSON.stringify({ suggestions: cleaned, meta: { provider: 'openai' } }), { status: 200, headers: corsHeaders });
-        }
-      } else {
-        const errTxt = await aiRes.text();
-        console.error('OpenAI error:', errTxt);
+        return { suggestions: toCleaned(parsed), tokens: aiJson?.usage?.total_tokens || 0 };
+      } catch (e: any) {
+        return { suggestions: [], tokens: 0, error: String(e?.message || e) };
+      }
+    };
+
+    const modeEnv = (Deno.env.get('AI_PROVIDER_MODE') || 'auto').toLowerCase();
+    const requestedMode = (payload as any)?.provider?.toLowerCase?.();
+    const mode = (requestedMode || modeEnv) as 'auto' | 'gemini' | 'openai' | 'hybrid';
+
+    const dedupeByContent = (arr: Suggestion[]) => {
+      const seen = new Set<string>();
+      const out: Suggestion[] = [];
+      for (const s of arr) {
+        const key = s.content.trim().toLowerCase();
+        if (!seen.has(key)) { seen.add(key); out.push(s); }
+        if (out.length >= 3) break;
+      }
+      return out;
+    };
+
+    // Hybrid: call both if keys exist
+    if (mode === 'hybrid' && geminiKey && openaiKey) {
+      const [g, o] = await Promise.all([callGemini(), callOpenAI()]);
+      const merged = dedupeByContent([...(g.suggestions || []), ...(o.suggestions || [])]);
+      if (merged.length > 0) {
+        try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: (g.tokens || 0) + (o.tokens || 0) }); } catch {}
+        return new Response(JSON.stringify({ suggestions: merged, meta: { provider: 'hybrid', sources: { gemini: (g.suggestions || []).length, openai: (o.suggestions || []).length } } }), { status: 200, headers: corsHeaders });
+      }
+      // fall through to auto preference
+    }
+
+    // Explicit single provider modes
+    if (mode === 'gemini' && geminiKey) {
+      const g = await callGemini();
+      if (g.suggestions.length > 0) {
+        try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: g.tokens || 0 }); } catch {}
+        return new Response(JSON.stringify({ suggestions: g.suggestions, meta: { provider: 'gemini' } }), { status: 200, headers: corsHeaders });
+      }
+      // fall through
+    }
+    if (mode === 'openai' && openaiKey) {
+      const o = await callOpenAI();
+      if (o.suggestions.length > 0) {
+        try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: o.tokens || 0 }); } catch {}
+        return new Response(JSON.stringify({ suggestions: o.suggestions, meta: { provider: 'openai' } }), { status: 200, headers: corsHeaders });
+      }
+      // fall through
+    }
+
+    // Auto: prefer Gemini, then OpenAI
+    if (geminiKey) {
+      const g = await callGemini();
+      if (g.suggestions.length > 0) {
+        try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: g.tokens || 0 }); } catch {}
+        return new Response(JSON.stringify({ suggestions: g.suggestions, meta: { provider: 'gemini' } }), { status: 200, headers: corsHeaders });
+      }
+    }
+    if (openaiKey) {
+      const o = await callOpenAI();
+      if (o.suggestions.length > 0) {
+        try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: o.tokens || 0 }); } catch {}
+        return new Response(JSON.stringify({ suggestions: o.suggestions, meta: { provider: 'openai' } }), { status: 200, headers: corsHeaders });
       }
     }
 
