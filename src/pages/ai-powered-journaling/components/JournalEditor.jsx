@@ -6,10 +6,7 @@ const JournalEditor = ({
   content, 
   onContentChange, 
   language, 
-  onMoodDetected, 
-  isAiSuggesting,
-  aiSuggestion,
-  onDismissSuggestion
+  onMoodDetected
 }, ref) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [wordCount, setWordCount] = useState(0);
@@ -20,6 +17,23 @@ const JournalEditor = ({
   const moodDetectionTimeoutRef = useRef(null);
   const targetWords = 200;
   const progress = Math.min(100, Math.round((wordCount / targetWords) * 100));
+
+  const insertText = useCallback((text) => {
+    if (!text || !textareaRef.current) return;
+    const el = textareaRef.current;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const before = content.slice(0, start);
+    const after = content.slice(end);
+    const newValue = `${before}${text}${after}`;
+    onContentChange(newValue);
+
+    const cursor = start + text.length;
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(cursor, cursor);
+    }, 0);
+  }, [content, onContentChange]);
 
   useEffect(() => {
     const words = content?.trim()?.split(/\s+/)?.filter(word => word?.length > 0);
@@ -137,8 +151,11 @@ const JournalEditor = ({
         default:
           return;
       }
+    },
+    insertText: (text) => {
+      insertText(text);
     }
-  }), [applyWrap, applyLinePrefix]);
+  }), [applyWrap, applyLinePrefix, insertText]);
 
   const handleFullscreenToggle = useCallback(() => {
     setIsFullscreen(!isFullscreen);
@@ -153,23 +170,6 @@ const JournalEditor = ({
       }, 3000);
     }
   }, [isVoiceRecording]);
-
-  const insertAiSuggestion = useCallback(() => {
-    if (aiSuggestion && textareaRef?.current) {
-      const cursorPosition = textareaRef?.current?.selectionStart;
-      const newContent = content?.slice(0, cursorPosition) + aiSuggestion + content?.slice(cursorPosition);
-      onContentChange(newContent);
-      
-      // Focus and set cursor position after insertion
-      setTimeout(() => {
-        textareaRef?.current?.focus();
-        textareaRef?.current?.setSelectionRange(
-          cursorPosition + aiSuggestion?.length,
-          cursorPosition + aiSuggestion?.length
-        );
-      }, 0);
-    }
-  }, [aiSuggestion, content, onContentChange]);
 
   const translations = {
     fr: {
@@ -288,43 +288,8 @@ const JournalEditor = ({
           }}
         />
 
-        {/* AI Suggestion Overlay */}
-        {aiSuggestion && (
-          <div className="absolute bottom-4 right-4 max-w-sm">
-            <div className="glass-panel border border-primary/20 rounded-xl p-4 shadow-soft-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-xs text-primary font-medium flex items-center">
-                  <Icon name="Sparkles" size={12} className="mr-1" />
-                  AI Suggestion
-                </div>
-                {isAiSuggesting && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">live</span>
-                )}
-              </div>
-              <p className="text-sm text-foreground mb-3 line-clamp-4">
-                {aiSuggestion}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="primary"
-                  size="xs"
-                  onClick={insertAiSuggestion}
-                  iconName="Plus"
-                  iconSize={12}
-                  className="flex-1"
-                >
-                  {t?.insertSuggestion}
-                </Button>
-                <Button variant="outline" size="xs" onClick={onDismissSuggestion} iconName="X" iconSize={12}>
-                  Hide
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Mood Indicator */}
-        <div className={`absolute top-4 right-4 ${isAiSuggesting ? 'animate-pulse' : ''}`}>
+        <div className={`absolute top-4 right-4`}>
           <div className={`
             w-3 h-3 rounded-full transition-colors duration-300 ring-2 ring-white/50
             ${currentMood === 'positive' ? 'bg-success' : 

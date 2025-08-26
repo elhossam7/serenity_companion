@@ -1,7 +1,20 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { aiService } from '../../../services/aiService';
+import Skeleton from '../../../components/ui/Skeleton';
+
+const SuggestionSkeleton = () => (
+  <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+    <div className="flex items-center space-x-2">
+      <Skeleton className="w-4 h-4 rounded-full" />
+      <Skeleton className="h-3 w-20" />
+    </div>
+    <Skeleton className="h-4 w-full" />
+    <Skeleton className="h-4 w-4/5" />
+    <Skeleton className="h-8 w-full rounded-md mt-2" />
+  </div>
+);
 
 const AiAssistant = ({ 
   language, 
@@ -17,6 +30,20 @@ const AiAssistant = ({
   const [error, setError] = useState(null);
   const debounceTimeoutRef = useRef(null);
   const lastGenerationRef = useRef({ content: '', mood: '', language: '' });
+
+  const groupedSuggestions = useMemo(() => {
+    if (!suggestions || suggestions.length === 0) {
+      return {};
+    }
+    return suggestions.reduce((acc, suggestion) => {
+      const type = suggestion.type || 'general';
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(suggestion);
+      return acc;
+    }, {});
+  }, [suggestions]);
 
   useEffect(() => {
     // Clear existing timeout
@@ -81,17 +108,10 @@ const AiAssistant = ({
         if (import.meta.env.DEV && result.meta?.provider) {
           console.log('AI suggestions loaded:', result.meta.provider);
         }
-        
-        if (result.data[0]?.content) {
-          onSuggestionGenerated(result.data[0].content);
-        }
       } else {
         // This shouldn't happen with the new service, but just in case
         const fallbackSuggestions = aiService.getFallbackSuggestions(language, currentMood);
         setSuggestions(fallbackSuggestions);
-        if (fallbackSuggestions?.length > 0) {
-          onSuggestionGenerated(fallbackSuggestions[0]?.content);
-        }
       }
     } catch (error) {
       console.error('Error generating suggestions:', error);
@@ -99,19 +119,25 @@ const AiAssistant = ({
       const fallbackSuggestions = aiService.getFallbackSuggestions(language, currentMood);
       setSuggestions(fallbackSuggestions);
       setError(error.message);
-      if (fallbackSuggestions?.length > 0) {
-        onSuggestionGenerated(fallbackSuggestions[0]?.content);
-      }
     } finally {
       setIsGenerating(false);
     }
-  }, [language, currentMood, journalContent, onSuggestionGenerated, isGenerating]);
+  }, [language, currentMood, journalContent, isGenerating]);
 
   const retryGenerateSuggestions = () => {
     generateSuggestions(true);
   };
 
   const culturalPrompts = aiService.getCulturalPrompts(language);
+
+  const suggestionTypeMeta = useMemo(() => ({
+    reflection: { label: { fr: 'Réflexion', ar: 'تأمل' }, color: 'border-secondary', icon: 'BookOpen' },
+    continuation: { label: { fr: 'Continuation', ar: 'متابعة' }, color: 'border-primary', icon: 'PenTool' },
+    exploration: { label: { fr: 'Exploration', ar: 'استكشاف' }, color: 'border-accent', icon: 'Compass' },
+    support: { label: { fr: 'Soutien', ar: 'دعم' }, color: 'border-success', icon: 'Shield' },
+    coping: { label: { fr: 'Adaptation', ar: 'تكيف' }, color: 'border-warning', icon: 'Coffee' },
+    general: { label: { fr: 'Général', ar: 'عام' }, color: 'border-muted', icon: 'Sparkles' },
+  }), []);
 
   const translations = {
     fr: {
@@ -161,7 +187,7 @@ const AiAssistant = ({
       ${isVisible ? 'translate-x-0' : 'translate-x-full'}
     `} style={{ maxHeight: 'calc(100vh - 4rem)', overflowY: 'auto' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card/80 backdrop-blur-sm z-10">
         <div className="flex items-center space-x-2">
           <Icon name="Sparkles" size={20} color="var(--color-primary)" />
           <h3 className="font-heading font-semibold text-foreground">
@@ -211,19 +237,16 @@ const AiAssistant = ({
         )}
       </div>
       {/* Content */}
-  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === 'suggestions' && (
           <>
-            {isGenerating && (
-              <div className="flex items-center justify-center py-8">
-                <div className="flex items-center space-x-2 text-primary">
-                  <Icon name="Loader2" size={16} className="animate-spin" />
-                  <span className="text-sm font-body">{t?.generating}</span>
-                </div>
+            {isGenerating && suggestions.length === 0 ? (
+              <div className="space-y-4">
+                <SuggestionSkeleton />
+                <SuggestionSkeleton />
+                <SuggestionSkeleton />
               </div>
-            )}
-
-            {!isGenerating && suggestions?.length === 0 && (
+            ) : !isGenerating && suggestions?.length === 0 ? (
               <div className="text-center py-8">
                 <Icon name="PenTool" size={32} color="var(--color-muted-foreground)" className="mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground font-body mb-4">
@@ -244,33 +267,36 @@ const AiAssistant = ({
                   </div>
                 )}
               </div>
-            )}
-
-            {suggestions?.map((suggestion, index) => (
-              <div key={`${suggestion?.type}-${suggestion?.id || index}`} className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Icon name={suggestion?.icon} size={16} color="var(--color-primary)" />
-                  <span className="text-xs font-caption text-primary uppercase tracking-wide">
-                    {suggestion?.type}
-                  </span>
+            ) : (
+              Object.entries(groupedSuggestions).map(([type, suggestionsList]) => (
+                <div key={type} className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Icon name={suggestionTypeMeta[type]?.icon || 'Sparkles'} size={14} className="text-muted-foreground" />
+                    <h4 className="text-sm font-medium text-muted-foreground">
+                      {suggestionTypeMeta[type]?.label?.[language] || type}
+                    </h4>
+                  </div>
+                  {suggestionsList.map((suggestion, index) => (
+                    <div key={`${suggestion?.type}-${suggestion?.id || index}`} className={`bg-muted/30 rounded-lg p-4 space-y-3 animate-fade-in border-l-4 ${suggestionTypeMeta[type]?.color || 'border-muted'}`}>
+                      <p className="text-sm font-body text-foreground leading-relaxed">
+                        {suggestion?.content}
+                      </p>
+                      
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        onClick={() => onSuggestionGenerated(suggestion?.content)}
+                        iconName="Plus"
+                        iconSize={12}
+                        className="w-full"
+                      >
+                        {t?.useSuggestion}
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                
-                <p className="text-sm font-body text-foreground leading-relaxed">
-                  {suggestion?.content}
-                </p>
-                
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={() => onSuggestionGenerated(suggestion?.content)}
-                  iconName="ArrowRight"
-                  iconSize={12}
-                  className="w-full"
-                >
-                  {t?.useSuggestion}
-                </Button>
-              </div>
-            ))}
+              ))
+            )}
           </>
         )}
 

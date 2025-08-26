@@ -21,9 +21,7 @@ const AiPoweredJournaling = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [showEntryHistory, setShowEntryHistory] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState('');
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
-  const [isAiSuggesting, setIsAiSuggesting] = useState(false);
   const editorRef = useRef(null);
 
   useEffect(() => {
@@ -87,14 +85,8 @@ const AiPoweredJournaling = () => {
     }
   }, [journalContent]);
 
-  const handleAiSuggestionGenerated = useCallback((suggestion) => {
-    setAiSuggestion(suggestion);
-    setIsAiSuggesting(true);
-    
-    // Clear suggestion after some time
-    setTimeout(() => {
-      setIsAiSuggesting(false);
-    }, 5000);
+  const handleSuggestionClick = useCallback((suggestionText) => {
+    editorRef.current?.insertText?.(suggestionText);
   }, []);
 
   const handleEntrySelect = useCallback((entry) => {
@@ -256,9 +248,6 @@ const AiPoweredJournaling = () => {
                   onContentChange={handleContentChange}
                   language={language}
                   onMoodDetected={handleMoodDetected}
-                  isAiSuggesting={isAiSuggesting}
-                  aiSuggestion={aiSuggestion}
-                  onDismissSuggestion={() => setAiSuggestion('')}
                 />
               </div>
             </div>
@@ -283,7 +272,7 @@ const AiPoweredJournaling = () => {
           currentMood={currentMood}
           isVisible={showAiAssistant}
           onToggle={() => setShowAiAssistant(!showAiAssistant)}
-          onSuggestionGenerated={handleAiSuggestionGenerated}
+          onSuggestionGenerated={handleSuggestionClick}
           journalContent={journalContent}
         />
 
