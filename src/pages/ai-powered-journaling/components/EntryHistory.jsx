@@ -150,7 +150,7 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
   return (
     <div className={`
       fixed inset-y-0 left-0 w-80 bg-card border-r border-border z-30
-      md:relative md:w-full md:border-r-0 md:border-r md:z-auto
+  md:relative md:w-full md:border-r md:z-auto
       transform transition-transform duration-300 ease-gentle
       ${isVisible ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
     `}>

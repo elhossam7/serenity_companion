@@ -30,7 +30,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
     - Remove or document `allowedHosts` unless required.
   - Acceptance: Local dev works on Windows without host/port conflicts.
 
-- [ ] Route guards and auth flow consistency
+- [x] Route guards and auth flow consistency
   - Scope: Pages mix mock localStorage auth and Supabase AuthContext.
   - Actions:
     - Introduce a ProtectedRoute wrapper or guard logic.
@@ -41,32 +41,32 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P1 — Data Layer and Core Features
 
-- [ ] Implement `moodService` against Supabase
+- [x] Implement `moodService` against Supabase
   - Files: `src/services/moodService.js`, `supabase/migrations/...sql` (already defines `mood_entries`).
   - Actions:
     - CRUD: create/get/update/delete entries.
     - Stats: last 30 days, streak via DB function `calculate_mood_streak`, insights via `get_mood_insights`.
   - Acceptance: Quick mood entry saves; mood charts/timeline load from real data.
 
-- [ ] Implement `journalService`
+- [x] Implement `journalService`
   - Files: `src/services/journalService.js`, table `journal_entries` exists.
   - Actions:
     - CRUD + search, favorites toggle, basic pagination.
   - Acceptance: Journal editor saves drafts to DB; history lists and loads entries.
 
-- [ ] Implement `wellnessService`
+- [x] Implement `wellnessService`
   - Files: `src/services/wellnessService.js`, tables `wellness_resources`, `user_resource_interactions`.
   - Actions:
     - Fetch featured resources, record interactions (viewed/completed/rated).
   - Acceptance: Home shows resources; interactions persist.
 
-- [ ] Wire UI to services (remove mocks)
+- [x] Wire UI to services (remove mocks)
   - Files: `src/pages/**` components using placeholders (e.g., `QuickMoodEntry`, journaling, dashboards).
   - Actions:
     - Replace timeouts/mocks with service calls; optimistic UI + error states.
   - Acceptance: All critical pages function with live data under RLS policies.
 
-- [ ] Auth flows (email/password)
+- [x] Auth flows (email/password)
   - Files: `src/contexts/AuthContext.jsx`, `src/pages/user-login/*`, `src/pages/user-registration/*`.
   - Actions:
     - Login/signup with Supabase; email verification; sign out; update profile metadata.
@@ -77,14 +77,14 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P1 — AI Assistant (initial production path)
 
-- [ ] Safe AI suggestion backend
+- [x] Safe AI suggestion backend
   - Scope: Replace frontend mock with secure server/edge function.
   - Actions:
     - Create an API route or Supabase Edge Function that calls provider (OpenAI/Anthropic/etc.).
     - Add content safety filters + rate limiting per user.
   - Acceptance: Journal suggestions generated via backend, not exposed in browser; errors handled gracefully.
 
-- [ ] Client integration
+- [x] Client integration
   - Files: `src/pages/ai-powered-journaling/components/AiAssistant.jsx`.
   - Actions:
     - Call backend endpoint; show loading, retry, and empty states.
@@ -101,7 +101,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
     - Store preference centrally; update `dir` dynamically.
   - Acceptance: Language switch updates UI instantly across routes.
 
-- [ ] Route-level loading and error surfaces
+- [x] Route-level loading and error surfaces
   - Actions:
     - Skeletons/spinners; empty states; toast/inline error for network failures.
   - Acceptance: No abrupt UI jumps; users see meaningful feedback.
