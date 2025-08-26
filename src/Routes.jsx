@@ -11,6 +11,10 @@ import AiPoweredJournaling from './pages/ai-powered-journaling';
 import ResetPasswordPage from './pages/reset-password';
 import AuthCallback from './pages/auth/callback';
 import DashboardHome from './pages/dashboard-home';
+import PrivacyPolicy from 'pages/legal/PrivacyPolicy';
+import TermsOfService from 'pages/legal/TermsOfService';
+import Disclaimers from 'pages/legal/Disclaimers';
+import LegalFooter from 'components/ui/LegalFooter';
 
 const Routes = () => {
   const RecoveryRedirect = () => {
@@ -34,12 +38,15 @@ const Routes = () => {
       <ErrorBoundary>
       <RecoveryRedirect />
       <ScrollToTop />
-      <RouterRoutes>
+  <RouterRoutes>
     {/* Public routes */}
         <Route path="/user-login" element={<UserLogin />} />
-  <Route path="/user-registration" element={<UserRegistration />} />
-  <Route path="/reset-password" element={<ResetPasswordPage />} />
-  <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/user-registration" element={<UserRegistration />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/disclaimers" element={<Disclaimers />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}> 
@@ -52,6 +59,7 @@ const Routes = () => {
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
+  <LegalFooter />
       </ErrorBoundary>
     </BrowserRouter>
   );

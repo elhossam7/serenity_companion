@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '../AppIcon';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [language, setLanguage] = useState('fr');
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [moodReminder, setMoodReminder] = useState(false);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-
     // Check for mood reminder (example: if user hasn't logged mood today)
     const lastMoodLog = localStorage.getItem('lastMoodLog');
     const today = new Date()?.toDateString();
@@ -26,22 +25,10 @@ const BottomNavigation = () => {
     return null;
   }
 
-  const translations = {
-    fr: {
-      dashboard: 'Accueil',
-      journal: 'Journal',
-      mood: 'Humeur',
-      support: 'Support'
-    },
-    ar: {
-      dashboard: 'الرئيسية',
-      journal: 'المذكرات',
-      mood: 'المزاج',
-      support: 'الدعم'
-    }
-  };
-
-  const t = translations?.[language];
+  const t = {
+    fr: { dashboard: 'Accueil', journal: 'Journal', mood: 'Humeur', support: 'Support', privacy: 'Confidentialité', terms: 'Conditions' },
+    ar: { dashboard: 'الرئيسية', journal: 'المذكرات', mood: 'المزاج', support: 'الدعم', privacy: 'الخصوصية', terms: 'الشروط' }
+  }[language] || { dashboard: 'Home', journal: 'Journal', mood: 'Mood', support: 'Support', privacy: 'Privacy', terms: 'Terms' };
 
   const navigationItems = [
     {
@@ -121,6 +108,14 @@ const BottomNavigation = () => {
             </button>
           );
         })}
+      </div>
+      <div className="flex justify-around items-center h-12 px-4 bg-background border-t border-border">
+        <button onClick={() => navigate('/privacy-policy')} className="text-sm text-muted-foreground hover:text-foreground">
+          {t.privacy}
+        </button>
+        <button onClick={() => navigate('/terms-of-service')} className="text-sm text-muted-foreground hover:text-foreground">
+          {t.terms}
+        </button>
       </div>
     </nav>
   );

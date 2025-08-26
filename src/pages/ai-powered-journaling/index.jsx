@@ -53,14 +53,18 @@ const AiPoweredJournaling = () => {
 
   const handleMoodDetected = useCallback((mood) => {
     setCurrentMood(mood);
-    if (mood === 'very_negative' || (mood === 'negative' && journalContent?.length > 500)) {
-      const negativeKeywords = ['suicide', 'harm', 'hopeless', 'worthless', 'end it all'];
-      const hasEmergencyKeywords = negativeKeywords?.some(keyword => 
-        journalContent?.toLowerCase()?.includes(keyword)
-      );
-      if (hasEmergencyKeywords) {
-        setShowEmergencyOverlay(true);
-      }
+    const text = (journalContent || '').toLowerCase();
+    const severe = ['suicide', 'kill myself', 'end it all', 'worthless', 'hopeless'];
+    const selfHarm = ['cut myself', 'hurt myself', 'self harm'];
+    const arabic = ['انتحار', 'أؤذي نفسي', 'فقدت الأمل'];
+    const triggered = (
+      mood === 'very_negative' ||
+      (mood === 'negative' && journalContent?.length > 200)
+    ) && (
+      severe.some(k => text.includes(k)) || selfHarm.some(k => text.includes(k)) || arabic.some(k => text.includes(k))
+    );
+    if (triggered) {
+      setShowEmergencyOverlay(true);
     }
   }, [journalContent]);
 

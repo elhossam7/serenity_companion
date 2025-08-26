@@ -90,7 +90,7 @@ const DashboardHome = () => {
                       {language === 'ar' ? 'بياناتك آمنة' : 'Vos données sont sécurisées'}
                     </h3>
                     <p className="text-xs font-caption text-muted-foreground">
-                      {language === 'ar' ?'جميع المعلومات محمية بتشفير من الدرجة العسكرية' :'Toutes les informations sont protégées par un chiffrement de niveau militaire'
+                      {language === 'ar' ?'جميع المعلومات محمية بتشفير من الدرجة العسكرية' :'Toutes les informations sont protégées par un chiffrement de مستوى عسكري'
                       }
                     </p>
                   </div>

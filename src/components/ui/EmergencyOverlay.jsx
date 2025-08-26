@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../AppIcon';
 import Button from './Button';
+import { useTranslation } from 'react-i18next';
 
 const EmergencyOverlay = ({ isVisible, onClose, triggerReason = 'crisis_detected' }) => {
-  const [language, setLanguage] = useState('fr');
+  const { i18n } = useTranslation();
   const [isClosing, setIsClosing] = useState(false);
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-  }, []);
 
   useEffect(() => {
     if (isVisible) {
@@ -82,7 +78,7 @@ const EmergencyOverlay = ({ isVisible, onClose, triggerReason = 'crisis_detected
     }
   };
 
-  const t = translations?.[language];
+  const t = translations?.[i18n.language] || translations.fr;
 
   return (
     <div className={`

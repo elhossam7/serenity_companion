@@ -253,6 +253,42 @@ const Header = () => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => { setIsMenuOpen(false); navigate('/privacy'); }}
+                      iconName="Shield"
+                      iconPosition="left"
+                      iconSize={16}
+                      className="w-full justify-start px-4 py-2 font-body"
+                    >
+                      Privacy
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setIsMenuOpen(false); navigate('/terms'); }}
+                      iconName="FileText"
+                      iconPosition="left"
+                      iconSize={16}
+                      className="w-full justify-start px-4 py-2 font-body"
+                    >
+                      Terms
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setIsMenuOpen(false); navigate('/disclaimers'); }}
+                      iconName="AlertTriangle"
+                      iconPosition="left"
+                      iconSize={16}
+                      className="w-full justify-start px-4 py-2 font-body"
+                    >
+                      Disclaimers
+                    </Button>
+                  </div>
+
+                  <div className="border-t border-border mt-2 pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={handleLogout}
                       iconName="LogOut"
                       iconPosition="left"

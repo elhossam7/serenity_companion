@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { sanitizeText } from '../../../utils/sanitize';
 
 const JournalEditor = ({ 
   content, 
@@ -273,7 +274,7 @@ const JournalEditor = ({
         <textarea
           ref={textareaRef}
           value={content}
-          onChange={(e) => onContentChange(e?.target?.value)}
+          onChange={(e) => onContentChange(sanitizeText(e?.target?.value))}
           placeholder={t?.placeholder}
           className={`
             w-full h-full p-6 resize-none border-none outline-none bg-transparent

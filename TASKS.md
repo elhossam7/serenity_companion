@@ -94,7 +94,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P1 — UX Polish for Critical Flows
 
-- [ ] Global language/i18n state
+- [x] Global language/i18n state
   - Scope: Many components read from `localStorage` directly.
   - Actions:
     - Introduce i18n provider (e.g., `react-i18next`) with FR/AR (and EN optional).

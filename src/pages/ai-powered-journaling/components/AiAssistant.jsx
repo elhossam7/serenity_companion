@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { aiService } from '../../../services/aiService';
 import Skeleton from '../../../components/ui/Skeleton';
+import { sanitizeText } from '../../../utils/sanitize';
 
 const SuggestionSkeleton = () => (
   <div className="bg-muted/30 rounded-lg p-4 space-y-3">
@@ -285,7 +286,7 @@ const AiAssistant = ({
                       <Button
                         variant="outline"
                         size="xs"
-                        onClick={() => onSuggestionGenerated(suggestion?.content)}
+                        onClick={() => onSuggestionGenerated(sanitizeText(suggestion?.content))}
                         iconName="Plus"
                         iconSize={12}
                         className="w-full"
@@ -318,7 +319,7 @@ const AiAssistant = ({
                 <Button
                   variant="secondary"
                   size="xs"
-                  onClick={() => onSuggestionGenerated(prompt?.content)}
+                  onClick={() => onSuggestionGenerated(sanitizeText(prompt?.content))}
                   iconName="ArrowRight"
                   iconSize={12}
                   className="w-full"
