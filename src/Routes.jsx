@@ -11,7 +11,8 @@ import AiPoweredJournaling from './pages/ai-powered-journaling';
 import ResetPasswordPage from './pages/reset-password';
 import AuthCallback from './pages/auth/callback';
 import DashboardHome from './pages/dashboard-home';
-import PrivacyPolicy from 'pages/legal/PrivacyPolicy';
+import SettingsPage from './pages/settings';
+import PolicyPrivacy from 'pages/legal/PolicyPrivacy';
 import TermsOfService from 'pages/legal/TermsOfService';
 import Disclaimers from 'pages/legal/Disclaimers';
 import LegalFooter from 'components/ui/LegalFooter';
@@ -44,7 +45,7 @@ const Routes = () => {
         <Route path="/user-registration" element={<UserRegistration />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
+  <Route path="/privacy" element={<PolicyPrivacy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/disclaimers" element={<Disclaimers />} />
 
@@ -54,6 +55,7 @@ const Routes = () => {
           <Route path="/ai-powered-journaling" element={<AiPoweredJournaling />} />
           <Route path="/mood-tracking-dashboard" element={<MoodTrackingDashboard />} />
           <Route path="/dashboard-home" element={<DashboardHome />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         {/* Fallback */}

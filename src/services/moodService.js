@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { offlineCache } from '../utils/offlineCache';
 
 export const moodService = {
   // Create a new mood entry
@@ -48,15 +49,18 @@ export const moodService = {
       // Default ordering
       query = query?.order('entry_date', { ascending: false })
 
-      const { data, error } = await query
+  const { data, error } = await query
 
       if (error) {
         throw error
       }
 
-      return { success: true, data: data || [] }
+  offlineCache.set(userId, 'mood_entries', data || [])
+  return { success: true, data: data || [] }
     } catch (error) {
-      return { success: false, error: error?.message || 'Failed to fetch mood entries' }
+  const cached = offlineCache.get(userId, 'mood_entries')
+  if (cached) return { success: true, data: cached, offline: true }
+  return { success: false, error: error?.message || 'Failed to fetch mood entries' }
     }
   },
 
@@ -66,7 +70,7 @@ export const moodService = {
       const startDate = new Date()
       startDate?.setDate(startDate?.getDate() - daysBack)
 
-      const { data: entries, error } = await supabase?.from('mood_entries')?.select('mood_level, energy_level, stress_level, entry_date')?.eq('user_id', userId)?.gte('entry_date', startDate?.toISOString()?.split('T')?.[0])?.order('entry_date', { ascending: false })
+  const { data: entries, error } = await supabase?.from('mood_entries')?.select('mood_level, energy_level, stress_level, entry_date')?.eq('user_id', userId)?.gte('entry_date', startDate?.toISOString()?.split('T')?.[0])?.order('entry_date', { ascending: false })
 
       if (error) {
         throw error
@@ -141,9 +145,12 @@ export const moodService = {
         stats.currentStreak = currentStreak
       }
 
-      return { success: true, data: stats }
+  offlineCache.set(userId, 'mood_stats', stats)
+  return { success: true, data: stats }
     } catch (error) {
-      return { success: false, error: error?.message || 'Failed to calculate mood statistics' }
+  const cached = offlineCache.get(userId, 'mood_stats')
+  if (cached) return { success: true, data: cached, offline: true }
+  return { success: false, error: error?.message || 'Failed to calculate mood statistics' }
     }
   },
 

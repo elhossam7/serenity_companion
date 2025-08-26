@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { offlineCache } from '../utils/offlineCache';
 
 export const journalService = {
   // Create a new journal entry
@@ -60,9 +61,15 @@ export const journalService = {
       if (error) {
         throw error
       }
-
+      // Cache last successful read for offline usage
+      offlineCache.set(userId, 'journal_entries', data || [])
       return { success: true, data: data || [] }
     } catch (error) {
+      // Fallback to offline cache if available
+      const cached = offlineCache.get(userId, 'journal_entries')
+      if (cached) {
+        return { success: true, data: cached, offline: true }
+      }
       return { success: false, error: error?.message || 'Failed to fetch journal entries' }
     }
   },
@@ -78,6 +85,12 @@ export const journalService = {
 
       return { success: true, data }
     } catch (error) {
+      // Try offline cache fallback
+      const cached = offlineCache.get(userId, 'journal_entries')
+      if (cached) {
+        const found = cached.find(e => e?.id === entryId)
+        if (found) return { success: true, data: found, offline: true }
+      }
       return { success: false, error: error?.message || 'Failed to fetch journal entry' }
     }
   },

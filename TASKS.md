@@ -110,22 +110,22 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P2 — Privacy, Safety, and Compliance
 
-- [ ] Privacy policy, Terms, disclaimers
+- [x] Privacy policy, Terms, disclaimers
   - Actions:
     - Add legal pages and consent gate at first login.
   - Acceptance: Legal links in footer/menu; consent recorded on profile.
 
-- [ ] Crisis detection & EmergencyOverlay triggers
+- [x] Crisis detection & EmergencyOverlay triggers
   - Actions:
     - Simple client heuristic (keywords/sentiment) to suggest help.
     - Toggle EmergencyOverlay; provide localized resources.
   - Acceptance: Sensitive patterns trigger non-alarming help prompt.
 
-- [ ] Data minimization and security
+- [x] Data minimization and security
   - Actions:
     - Sanitize inputs; consider client-side encryption for journals (optional phase).
     - Review RLS policies and verified behaviors.
-  - Acceptance: Basic security review completed and notes tracked.
+  - Acceptance: Basic security review completed and notes tracked. See SECURITY_NOTES.md.
 
 ---
 
