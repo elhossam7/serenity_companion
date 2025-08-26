@@ -14,7 +14,7 @@
 
 ## 📋 Prerequisites
 
-- Node.js (v18.x or higher)
+- Node.js (v18 or higher)
 - npm or yarn
 
 ## 🛠️ Installation
@@ -26,14 +26,14 @@
    ```
 
 2. **Set up environment variables:**
-   Create a `.env` file in the root of the project by copying the example and fill your Supabase values:
+   Create `.env` from the provided example and fill your Supabase values:
    ```bash
    # Windows PowerShell
    copy .env.example .env
    ```
    Then edit `.env` and set:
-   - `VITE_SUPABASE_URL=https://your-project-ref.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY=your-supabase-anon-key`
+   - `VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY`
 
 3. **Install dependencies:**
    ```bash
@@ -71,7 +71,7 @@ react_app/
    npm start
    ```
 ├── tailwind.config.js  # Tailwind CSS configuration
-└── vite.config.js      # Vite configuration
+└── vite.config.mjs     # Vite configuration
 ```
 
 ## 🧩 Adding Routes
@@ -120,4 +120,9 @@ npm run build
 
 If you see an error about missing Supabase variables, ensure `.env` is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 This app requires Node.js 18+.
+
+## 🧰 Vite Dev Server
+
+- The dev server runs on port 4028. If the port is taken, Vite will pick a free one automatically.
+- To expose the dev server behind a proxy/domain, add your host to `allowedHosts` in `vite.config.mjs`.
 

@@ -8,7 +8,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P0 — Immediate Run/Setup Blockers
 
-- [ ] Node/runtime alignment and start script
+- [x] Node/runtime alignment and start script
   - Scope: Ensure dev server works reliably on modern Node.
   - Actions:
     - Update README prerequisites to Node 18+ (Vite 5 requires Node ≥18).
@@ -16,14 +16,14 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
     - Ensure `npm run dev` alias for `vite` (keep `npm start` if desired).
   - Acceptance: `npm start` or `npm run dev` boots without crash.
 
-- [ ] Supabase environment variables and DX
+- [x] Supabase environment variables and DX
   - Scope: App throws if `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` missing (`src/lib/supabase.js`).
   - Actions:
     - Add `.env.example` with the two keys.
     - Document environment setup and how to get keys from Supabase.
   - Acceptance: With a valid `.env`, app starts; without it, a clear setup message is shown in README.
 
-- [ ] Vite server config sanity
+- [x] Vite server config sanity
   - Scope: `vite.config.mjs` has strict port 4028 and allowedHosts for external domains.
   - Actions:
     - Keep `strictPort: true` only if needed; otherwise relax or document.
