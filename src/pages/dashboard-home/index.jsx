@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '../../components/ui/Header';
 import BottomNavigation from '../../components/ui/BottomNavigation';
 import EmergencyOverlay from '../../components/ui/EmergencyOverlay';
@@ -9,15 +10,14 @@ import RecentActivity from './components/RecentActivity';
 import PersonalizedRecommendations from './components/PersonalizedRecommendations';
 
 const DashboardHome = () => {
-  const [language, setLanguage] = useState('fr');
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-  // Simulate loading
-  const t = setTimeout(() => setIsLoading(false), 600);
+    // Simulate loading
+    const t = setTimeout(() => setIsLoading(false), 600);
 
     // Mock emergency detection (for demo purposes)
     const checkEmergencyTriggers = () => {

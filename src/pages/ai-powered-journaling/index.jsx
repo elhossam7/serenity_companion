@@ -10,11 +10,13 @@ import EntryHistory from './components/EntryHistory';
 import JournalToolbar from './components/JournalToolbar';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 const AiPoweredJournaling = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [language, setLanguage] = useState('fr');
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [journalContent, setJournalContent] = useState('');
   const [currentMood, setCurrentMood] = useState('neutral');
   const [isPrivate, setIsPrivate] = useState(true);
@@ -25,44 +27,24 @@ const AiPoweredJournaling = () => {
   const editorRef = useRef(null);
 
   useEffect(() => {
-    // Load saved language preference
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-
     // Load draft content
     const draftContent = localStorage.getItem('journal_draft');
     if (draftContent) {
       setJournalContent(draftContent);
     }
-
-    // Set up document direction
-    document.documentElement?.setAttribute('dir', savedLanguage === 'ar' ? 'rtl' : 'ltr');
   }, [navigate, user]);
 
   useEffect(() => {
-    // Update language when it changes globally
-    const handleLanguageChange = () => {
-      const newLanguage = localStorage.getItem('language') || 'fr';
-      setLanguage(newLanguage);
-      document.documentElement?.setAttribute('dir', newLanguage === 'ar' ? 'rtl' : 'ltr');
-    };
-
     // Handle responsive AI assistant visibility
     const handleResize = () => {
-    const isDesktop = window.innerWidth >= 1024;
-    setShowAiAssistant(isDesktop);
-    setShowEntryHistory(isDesktop);
+      const isDesktop = window.innerWidth >= 1024;
+      setShowAiAssistant(isDesktop);
+      setShowEntryHistory(isDesktop);
     };
 
-  // Set initial state based on current viewport
-  handleResize();
-
+    handleResize();
     window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('storage', handleLanguageChange);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleContentChange = useCallback((content) => {
@@ -71,14 +53,11 @@ const AiPoweredJournaling = () => {
 
   const handleMoodDetected = useCallback((mood) => {
     setCurrentMood(mood);
-    
-    // Trigger emergency overlay for severe negative sentiment
     if (mood === 'very_negative' || (mood === 'negative' && journalContent?.length > 500)) {
       const negativeKeywords = ['suicide', 'harm', 'hopeless', 'worthless', 'end it all'];
       const hasEmergencyKeywords = negativeKeywords?.some(keyword => 
         journalContent?.toLowerCase()?.includes(keyword)
       );
-      
       if (hasEmergencyKeywords) {
         setShowEmergencyOverlay(true);
       }
@@ -97,8 +76,6 @@ const AiPoweredJournaling = () => {
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
-    
-    // Simulate save operation
     setTimeout(() => {
       const entry = {
         id: Date.now(),
@@ -108,19 +85,11 @@ const AiPoweredJournaling = () => {
         createdAt: new Date()?.toISOString(),
         language: language
       };
-      
-      // Save to localStorage (in real app, this would be API call)
       const existingEntries = JSON.parse(localStorage.getItem('journal_entries') || '[]');
       existingEntries?.unshift(entry);
       localStorage.setItem('journal_entries', JSON.stringify(existingEntries));
-      
-      // Clear draft
       localStorage.removeItem('journal_draft');
-      
       setIsSaving(false);
-      
-      // Show success feedback
-      // In real app, you might show a toast notification
     }, 1500);
   }, [journalContent, currentMood, isPrivate, language]);
 
@@ -131,14 +100,11 @@ const AiPoweredJournaling = () => {
       date: new Date()?.toISOString(),
       language: language
     };
-
     switch (format) {
       case 'pdf':
-        // In real app, generate PDF
         console.log('Exporting as PDF:', exportData);
         break;
       case 'txt':
-        // Download as text file
         const blob = new Blob([journalContent], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -148,7 +114,6 @@ const AiPoweredJournaling = () => {
         URL.revokeObjectURL(url);
         break;
       case 'email':
-        // Open email client
         const subject = encodeURIComponent('Journal Entry');
         const body = encodeURIComponent(journalContent);
         window.open(`mailto:?subject=${subject}&body=${body}`);
@@ -157,7 +122,6 @@ const AiPoweredJournaling = () => {
   }, [journalContent, currentMood, language]);
 
   const handleMoodTag = useCallback((moodId) => {
-    // Reuse toolbar for formatting actions
     if (typeof moodId === 'string' && moodId.startsWith('__format_')) {
       const action = moodId.replace('__format_', '').replace('__', '');
       editorRef.current?.applyFormat?.(action);
@@ -193,7 +157,7 @@ const AiPoweredJournaling = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16 pb-16 md:pb-0">
-  <div className="h-[calc(100vh-4rem)] flex max-w-7xl mx-auto w-full px-2 lg:px-4 transition-all duration-300 ease-gentle">
+        <div className="h-[calc(100vh-4rem)] flex max-w-7xl mx-auto w-full px-2 lg:px-4 transition-all duration-300 ease-gentle">
           {/* Entry History Sidebar - Desktop */}
           <div className="hidden lg:block w-80">
             <EntryHistory

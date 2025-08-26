@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import BottomNavigation from '../../components/ui/BottomNavigation';
@@ -8,13 +9,13 @@ import MockCredentialsDisplay from './components/MockCredentialsDisplay';
 import Icon from '../../components/AppIcon';
 
 const UserLogin = () => {
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const navigate = useNavigate();
-  const [language, setLanguage] = useState('fr');
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-  }, []);
+    document.documentElement?.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+  }, [language]);
 
   const translations = {
     fr: {

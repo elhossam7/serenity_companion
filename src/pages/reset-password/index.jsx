@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 const ResetPasswordPage = () => {
   const { updatePassword } = useAuth()
+  const { i18n } = useTranslation()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [error, setError] = useState('')
-  const [lng, setLng] = useState('fr')
   const [fromRecovery, setFromRecovery] = useState(false)
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr'
-    setLng(savedLanguage)
-    document.documentElement?.setAttribute('lang', savedLanguage)
-    document.documentElement?.setAttribute('dir', savedLanguage === 'ar' ? 'rtl' : 'ltr')
-
-    // detect if we were redirected from Supabase PASSWORD_RECOVERY
+    const lng = i18n.language
+    document.documentElement?.setAttribute('lang', lng)
+    document.documentElement?.setAttribute('dir', lng === 'ar' ? 'rtl' : 'ltr')
     try {
       const flag = sessionStorage?.getItem('isPasswordRecovery')
       if (flag === '1') {
@@ -24,7 +22,7 @@ const ResetPasswordPage = () => {
         sessionStorage?.removeItem('isPasswordRecovery')
       }
     } catch (_) {}
-  }, [])
+  }, [i18n.language])
 
   const dict = {
     fr: {
@@ -54,7 +52,7 @@ const ResetPasswordPage = () => {
       fail: 'فشل تحديث كلمة المرور'
     }
   }
-  const t = dict[lng] || dict.fr
+  const t = dict[i18n.language] || dict.fr
 
   const onSubmit = async (e) => {
     e?.preventDefault()
@@ -77,7 +75,7 @@ const ResetPasswordPage = () => {
       return
     }
     setStatus('success')
-  try { sessionStorage.removeItem('isPasswordRecovery') } catch (_) {}
+    try { sessionStorage.removeItem('isPasswordRecovery') } catch (_) {}
   }
 
   return (
@@ -87,7 +85,7 @@ const ResetPasswordPage = () => {
           <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-6 shadow-soft-lg cultural-pattern">
             {fromRecovery && (
               <div className="mb-4 p-3 rounded-md border border-info/30 bg-info/10 text-info text-sm">
-                {lng === 'ar' ? 'تم تحميل الجلسة، الرجاء إدخال كلمة مرور جديدة.' : 'Session chargée, veuillez définir un nouveau mot de passe.'}
+                {i18n.language === 'ar' ? 'تم تحميل الجلسة، الرجاء إدخال كلمة مرور جديدة.' : 'Session chargée, veuillez définir un nouveau mot de passe.'}
               </div>
             )}
             {status === 'success' ? (
@@ -133,7 +131,7 @@ const ResetPasswordPage = () => {
             )}
           </div>
         </div>
-  </main>
+      </main>
     </div>
   )
 }

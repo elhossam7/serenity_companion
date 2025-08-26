@@ -13,11 +13,13 @@ import AIInsightsPanel from './components/AIInsightsPanel';
 import MoodStreakCard from './components/MoodStreakCard';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
-const MoodTrackingDashboard = () => {
+const MoodTrackingDashboard = (props) => {
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
-  const [language, setLanguage] = useState('fr');
   const [showEmergency, setShowEmergency] = useState(false);
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [moodData, setMoodData] = useState(null);
@@ -27,7 +29,7 @@ const MoodTrackingDashboard = () => {
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || userProfile?.language || 'fr';
-    setLanguage(savedLanguage);
+    i18n.changeLanguage(savedLanguage);
 
     // Check authentication
     if (!user) {
@@ -37,7 +39,7 @@ const MoodTrackingDashboard = () => {
 
     // Load mood data
     loadMoodData();
-  }, [user, userProfile, navigate]);
+  }, [user, userProfile, navigate, i18n]);
 
   const loadMoodData = async () => {
     if (!user?.id) return;

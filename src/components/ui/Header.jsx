@@ -3,28 +3,28 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/I18nContext';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const [language, setLanguage] = useState('fr');
+  const { t, i18n } = useTranslation();
+  const { setLanguage } = useI18n();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState({ name: 'Utilisateur', avatar: null });
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-    document.documentElement?.setAttribute('lang', savedLanguage);
-    document.documentElement?.setAttribute('dir', savedLanguage === 'ar' ? 'rtl' : 'ltr');
-  }, []);
+    // ensure html attrs align when Header mounts (I18nProvider handles ongoing updates)
+    const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement?.setAttribute('lang', i18n.language);
+    document.documentElement?.setAttribute('dir', dir);
+  }, [i18n.language]);
 
   const toggleLanguage = () => {
-    const newLanguage = language === 'fr' ? 'ar' : 'fr';
-    setLanguage(newLanguage);
-    localStorage.setItem('language', newLanguage);
-    document.documentElement?.setAttribute('lang', newLanguage);
-    document.documentElement?.setAttribute('dir', newLanguage === 'ar' ? 'rtl' : 'ltr');
+    const next = i18n.language === 'fr' ? 'ar' : i18n.language === 'ar' ? 'en' : 'fr';
+    setLanguage(next);
   };
 
   const handleLogoClick = () => {
@@ -42,7 +42,7 @@ const Header = () => {
 
   const isAuthPage = location?.pathname === '/user-login' || location?.pathname === '/user-registration';
 
-  const translations = {
+  const labels = {
     fr: {
       dashboard: 'Tableau de bord',
       journal: 'Journal',
@@ -52,7 +52,7 @@ const Header = () => {
       settings: 'Paramètres',
       help: 'Aide',
       logout: 'Déconnexion',
-      language: 'عربية'
+      language: 'العربية'
     },
     ar: {
       dashboard: 'لوحة التحكم',
@@ -64,10 +64,19 @@ const Header = () => {
       help: 'المساعدة',
       logout: 'تسجيل الخروج',
       language: 'Français'
+    },
+    en: {
+      dashboard: 'Dashboard',
+      journal: 'Journal',
+      mood: 'Mood',
+      support: 'Support',
+      profile: 'Profile',
+      settings: 'Settings',
+      help: 'Help',
+      logout: 'Logout',
+      language: i18n.language === 'fr' ? 'العربية' : 'Français'
     }
-  };
-
-  const t = translations?.[language];
+  }[i18n.language] || {};
 
   if (isAuthPage) {
     return (
@@ -93,7 +102,7 @@ const Header = () => {
             onClick={toggleLanguage}
             className="font-caption"
           >
-            {t?.language}
+            {labels.language}
           </Button>
         </div>
       </header>
@@ -128,7 +137,7 @@ const Header = () => {
             iconSize={16}
             className="font-body"
           >
-            {t?.dashboard}
+            {labels.dashboard}
           </Button>
           
           <Button
@@ -140,7 +149,7 @@ const Header = () => {
             iconSize={16}
             className="font-body"
           >
-            {t?.journal}
+            {labels.journal}
           </Button>
           
           <Button
@@ -152,7 +161,7 @@ const Header = () => {
             iconSize={16}
             className="font-body"
           >
-            {t?.mood}
+            {labels.mood}
           </Button>
           
           <Button
@@ -164,7 +173,7 @@ const Header = () => {
             iconSize={16}
             className="font-body"
           >
-            {t?.support}
+            {labels.support}
           </Button>
         </nav>
 
@@ -175,7 +184,7 @@ const Header = () => {
             onClick={toggleLanguage}
             className="font-caption"
           >
-            {t?.language}
+            {labels.language}
           </Button>
 
           <div className="relative">
@@ -207,7 +216,7 @@ const Header = () => {
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
-                    {t?.profile}
+                    {labels.profile}
                   </Button>
                   
                   <Button
@@ -222,7 +231,7 @@ const Header = () => {
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
-                    {t?.settings}
+                    {labels.settings}
                   </Button>
                   
                   <Button
@@ -237,7 +246,7 @@ const Header = () => {
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
-                    {t?.help}
+                    {labels.help}
                   </Button>
                   
                   <div className="border-t border-border mt-2 pt-2">
@@ -250,7 +259,7 @@ const Header = () => {
                       iconSize={16}
                       className="w-full justify-start px-4 py-2 font-body text-error hover:text-error"
                     >
-                      {t?.logout}
+                      {labels.logout}
                     </Button>
                   </div>
                 </div>

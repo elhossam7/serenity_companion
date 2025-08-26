@@ -6,12 +6,14 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import ForgotPasswordInline from '../../../components/auth/ForgotPasswordInline';
+import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn, authError, clearError } = useAuth();
-  const [language, setLanguage] = useState('fr');
   const [formData, setFormData] = useState({
     emailOrPhone: '',
     password: '',
@@ -20,11 +22,6 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-  }, []);
 
   const resetHint = React.useMemo(() => {
     const params = new URLSearchParams(location.search);
