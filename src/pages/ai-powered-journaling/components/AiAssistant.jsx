@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { aiService } from '../../../services/aiService';
@@ -15,18 +15,46 @@ const AiAssistant = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('suggestions');
   const [error, setError] = useState(null);
+  const debounceTimeoutRef = useRef(null);
+  const lastGenerationRef = useRef({ content: '', mood: '', language: '' });
 
   useEffect(() => {
-    if (journalContent?.length > 100) {
-      generateSuggestions();
-    } else {
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Check if we should generate suggestions
+    const shouldGenerate = journalContent?.length > 100;
+    const hasChanged = 
+      journalContent !== lastGenerationRef.current.content ||
+      currentMood !== lastGenerationRef.current.mood ||
+      language !== lastGenerationRef.current.language;
+
+    if (shouldGenerate && hasChanged) {
+      // Debounce the generation to avoid too many calls
+      debounceTimeoutRef.current = setTimeout(() => {
+        generateSuggestions();
+      }, 1500); // Wait 1.5 seconds after user stops typing
+    } else if (!shouldGenerate) {
       // Clear suggestions if content is too short
       setSuggestions([]);
       setError(null);
     }
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, [journalContent, currentMood, language]);
 
   const generateSuggestions = useCallback(async (force = false) => {
+    // Prevent duplicate calls
+    if (isGenerating && !force) {
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     
@@ -38,10 +66,21 @@ const AiAssistant = ({
         force: force
       });
       
+      // Update last generation reference
+      lastGenerationRef.current = {
+        content: journalContent,
+        mood: currentMood,
+        language: language
+      };
+      
       // The new service always returns success: true with fallback when needed
       if (result.success && result.data?.length > 0) {
         setSuggestions(result.data);
-        console.log('AiAssistant: Suggestions received:', result);
+        
+        // Only log in development mode and less verbosely
+        if (import.meta.env.DEV && result.meta?.provider) {
+          console.log('AI suggestions loaded:', result.meta.provider);
+        }
         
         if (result.data[0]?.content) {
           onSuggestionGenerated(result.data[0].content);
@@ -66,7 +105,7 @@ const AiAssistant = ({
     } finally {
       setIsGenerating(false);
     }
-  }, [language, currentMood, journalContent, onSuggestionGenerated]);
+  }, [language, currentMood, journalContent, onSuggestionGenerated, isGenerating]);
 
   const retryGenerateSuggestions = () => {
     generateSuggestions(true);
@@ -107,7 +146,7 @@ const AiAssistant = ({
         variant="primary"
         size="icon"
         onClick={onToggle}
-        className="fixed bottom-20 right-4 z-40 md:hidden shadow-soft-lg"
+        className="fixed bottom-20 right-4 z-40 lg:hidden shadow-soft-lg"
       >
         <Icon name="Sparkles" size={20} />
       </Button>
@@ -117,10 +156,10 @@ const AiAssistant = ({
   return (
     <div className={`
       fixed inset-y-0 right-0 w-80 bg-card border-l border-border z-30
-      md:relative md:w-full md:border-l md:z-auto
+      lg:fixed lg:top-16 lg:bottom-0 lg:right-0 lg:w-96
       transform transition-transform duration-300 ease-gentle
-      ${isVisible ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-    `}>
+      ${isVisible ? 'translate-x-0' : 'translate-x-full'}
+    `} style={{ maxHeight: 'calc(100vh - 4rem)', overflowY: 'auto' }}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-2">
@@ -134,7 +173,7 @@ const AiAssistant = ({
           variant="ghost"
           size="icon"
           onClick={onToggle}
-          className="md:hidden"
+          className="lg:hidden"
         >
           <Icon name="X" size={16} />
         </Button>
@@ -172,7 +211,7 @@ const AiAssistant = ({
         )}
       </div>
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+  <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === 'suggestions' && (
           <>
             {isGenerating && (

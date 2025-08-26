@@ -144,13 +144,18 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
   const t = translations?.[language];
 
   if (!isVisible) {
-    return null;
+    return (
+      <>
+        {/* Hidden state: no panel, just return null; the open button is controlled at page level */}
+        <span className="sr-only">History closed</span>
+      </>
+    );
   }
 
   return (
     <div className={`
       fixed inset-y-0 left-0 w-80 bg-card border-r border-border z-30
-  md:relative md:w-full md:border-r md:z-auto
+      md:relative md:w-full md:border-r md:z-auto
       transform transition-transform duration-300 ease-gentle
       ${isVisible ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
     `}>
@@ -163,12 +168,7 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
           </h3>
         </div>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggle}
-          className="md:hidden"
-        >
+        <Button variant="ghost" size="icon" onClick={onToggle}>
           <Icon name="X" size={16} />
         </Button>
       </div>

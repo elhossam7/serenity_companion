@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/ui/Header';
@@ -24,6 +24,7 @@ const AiPoweredJournaling = () => {
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [isAiSuggesting, setIsAiSuggesting] = useState(false);
+  const editorRef = useRef(null);
 
   useEffect(() => {
     // Load saved language preference
@@ -48,15 +49,29 @@ const AiPoweredJournaling = () => {
       document.documentElement?.setAttribute('dir', newLanguage === 'ar' ? 'rtl' : 'ltr');
     };
 
-    window.addEventListener('storage', handleLanguageChange);
-    return () => window.removeEventListener('storage', handleLanguageChange);
+    // Handle responsive AI assistant visibility
+    const handleResize = () => {
+    const isDesktop = window.innerWidth >= 1024;
+    setShowAiAssistant(isDesktop);
+    setShowEntryHistory(isDesktop);
+    };
+
+  // Set initial state based on current viewport
+  handleResize();
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('storage', handleLanguageChange);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  const handleContentChange = (content) => {
+  const handleContentChange = useCallback((content) => {
     setJournalContent(content);
-  };
+  }, []);
 
-  const handleMoodDetected = (mood) => {
+  const handleMoodDetected = useCallback((mood) => {
     setCurrentMood(mood);
     
     // Trigger emergency overlay for severe negative sentiment
@@ -70,9 +85,25 @@ const AiPoweredJournaling = () => {
         setShowEmergencyOverlay(true);
       }
     }
-  };
+  }, [journalContent]);
 
-  const handleSave = async () => {
+  const handleAiSuggestionGenerated = useCallback((suggestion) => {
+    setAiSuggestion(suggestion);
+    setIsAiSuggesting(true);
+    
+    // Clear suggestion after some time
+    setTimeout(() => {
+      setIsAiSuggesting(false);
+    }, 5000);
+  }, []);
+
+  const handleEntrySelect = useCallback((entry) => {
+    setJournalContent(entry?.content || entry?.preview);
+    setCurrentMood(entry?.mood);
+    setShowEntryHistory(false);
+  }, []);
+
+  const handleSave = useCallback(async () => {
     setIsSaving(true);
     
     // Simulate save operation
@@ -99,9 +130,9 @@ const AiPoweredJournaling = () => {
       // Show success feedback
       // In real app, you might show a toast notification
     }, 1500);
-  };
+  }, [journalContent, currentMood, isPrivate, language]);
 
-  const handleExport = (format) => {
+  const handleExport = useCallback((format) => {
     const exportData = {
       content: journalContent,
       mood: currentMood,
@@ -131,33 +162,23 @@ const AiPoweredJournaling = () => {
         window.open(`mailto:?subject=${subject}&body=${body}`);
         break;
     }
-  };
+  }, [journalContent, currentMood, language]);
 
-  const handleMoodTag = (moodId) => {
+  const handleMoodTag = useCallback((moodId) => {
+    // Reuse toolbar for formatting actions
+    if (typeof moodId === 'string' && moodId.startsWith('__format_')) {
+      const action = moodId.replace('__format_', '').replace('__', '');
+      editorRef.current?.applyFormat?.(action);
+      return;
+    }
     setCurrentMood(moodId);
-  };
+  }, []);
 
-  const handlePrivacyChange = (isPrivateValue) => {
+  const handlePrivacyChange = useCallback((isPrivateValue) => {
     setIsPrivate(isPrivateValue);
-  };
+  }, []);
 
-  const handleAiSuggestionGenerated = (suggestion) => {
-    setAiSuggestion(suggestion);
-    setIsAiSuggesting(true);
-    
-    // Clear suggestion after some time
-    setTimeout(() => {
-      setIsAiSuggesting(false);
-    }, 5000);
-  };
-
-  const handleEntrySelect = (entry) => {
-    setJournalContent(entry?.content || entry?.preview);
-    setCurrentMood(entry?.mood);
-    setShowEntryHistory(false);
-  };
-
-  const translations = {
+  const translations = useMemo(() => ({
     fr: {
       title: 'Journal Assisté par IA',
       subtitle: 'Écrivez vos pensées avec un soutien culturellement sensible',
@@ -172,7 +193,7 @@ const AiPoweredJournaling = () => {
       history: 'السجل',
       aiAssistant: 'المساعد الذكي'
     }
-  };
+  }), []);
 
   const t = translations?.[language];
 
@@ -180,19 +201,19 @@ const AiPoweredJournaling = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16 pb-16 md:pb-0">
-        <div className="h-[calc(100vh-4rem)] flex">
+  <div className="h-[calc(100vh-4rem)] flex max-w-7xl mx-auto w-full px-2 lg:px-4 transition-all duration-300 ease-gentle">
           {/* Entry History Sidebar - Desktop */}
           <div className="hidden lg:block w-80">
             <EntryHistory
               language={language}
-              isVisible={true}
-              onToggle={() => {}}
+              isVisible={showEntryHistory}
+              onToggle={() => setShowEntryHistory(!showEntryHistory)}
               onEntrySelect={handleEntrySelect}
             />
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col transition-all duration-300 ease-gentle ${showAiAssistant ? 'lg:pr-96' : ''}`}>
             {/* Page Header - Mobile */}
             <div className="lg:hidden p-4 bg-card border-b border-border">
               <div className="flex items-center justify-between mb-2">
@@ -228,26 +249,16 @@ const AiPoweredJournaling = () => {
 
             {/* Editor Area */}
             <div className="flex-1 flex">
-              <div className="flex-1">
+              <div className="flex-1 px-1 sm:px-2 lg:px-4">
                 <JournalEditor
+                  ref={editorRef}
                   content={journalContent}
                   onContentChange={handleContentChange}
                   language={language}
                   onMoodDetected={handleMoodDetected}
                   isAiSuggesting={isAiSuggesting}
                   aiSuggestion={aiSuggestion}
-                />
-              </div>
-
-              {/* AI Assistant Sidebar - Desktop */}
-              <div className="hidden lg:block w-80">
-                <AiAssistant
-                  language={language}
-                  currentMood={currentMood}
-                  isVisible={true}
-                  onToggle={() => {}}
-                  onSuggestionGenerated={handleAiSuggestionGenerated}
-                  journalContent={journalContent}
+                  onDismissSuggestion={() => setAiSuggestion('')}
                 />
               </div>
             </div>
@@ -266,7 +277,17 @@ const AiPoweredJournaling = () => {
           </div>
         </div>
 
-        {/* Mobile/Tablet Overlays (hidden on lg+ to avoid duplicates with desktop sidebars) */}
+        {/* AI Assistant - Single instance for both desktop and mobile */}
+        <AiAssistant
+          language={language}
+          currentMood={currentMood}
+          isVisible={showAiAssistant}
+          onToggle={() => setShowAiAssistant(!showAiAssistant)}
+          onSuggestionGenerated={handleAiSuggestionGenerated}
+          journalContent={journalContent}
+        />
+
+        {/* Entry History - Mobile overlay */}
         <div className="lg:hidden">
           <EntryHistory
             language={language}
@@ -274,18 +295,34 @@ const AiPoweredJournaling = () => {
             onToggle={() => setShowEntryHistory(!showEntryHistory)}
             onEntrySelect={handleEntrySelect}
           />
-
-          <AiAssistant
-            language={language}
-            currentMood={currentMood}
-            isVisible={showAiAssistant}
-            onToggle={() => setShowAiAssistant(!showAiAssistant)}
-            onSuggestionGenerated={handleAiSuggestionGenerated}
-            journalContent={journalContent}
-          />
+          {!showEntryHistory && (
+            <Button
+              variant="primary"
+              size="icon"
+              onClick={() => setShowEntryHistory(true)}
+              className="fixed bottom-20 left-4 z-40 shadow-soft-lg"
+              title={t?.history}
+            >
+              <Icon name="History" size={20} />
+            </Button>
+          )}
         </div>
       </main>
       <BottomNavigation />
+      {/* Desktop floating button to reopen history when hidden */}
+      {!showEntryHistory && (
+        <div className="hidden lg:block">
+          <Button
+            variant="primary"
+            size="icon"
+            onClick={() => setShowEntryHistory(true)}
+            className="fixed bottom-24 left-6 z-40 shadow-soft-lg"
+            title={t?.history}
+          >
+            <Icon name="History" size={20} />
+          </Button>
+        </div>
+      )}
       <EmergencyOverlay
         isVisible={showEmergencyOverlay}
         onClose={() => setShowEmergencyOverlay(false)}

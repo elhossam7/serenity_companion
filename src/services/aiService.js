@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 export const aiService = {
   // Add a suggestion cache to track what we've shown
   _suggestionCache: new Map(),
+  _loggedFallback: false, // Track if we've already logged the fallback message
   
   // Generate AI suggestions for journaling
   async generateSuggestions(options = {}) {
@@ -14,11 +15,16 @@ export const aiService = {
     
     // In development or when Supabase isn't configured, use enhanced fallback
     if (isDev || !hasSupabaseConfig) {
-      console.log('Using enhanced fallback suggestions (development mode or missing Supabase config)');
+      // Only log once per session or when there's a significant change
+      if (!this._loggedFallback) {
+        console.log('Using enhanced fallback suggestions (development mode or missing Supabase config)');
+        this._loggedFallback = true;
+      }
+      
       const fallbackSuggestions = this.getVariedSuggestions(language, mood, content, force);
       
       // Simulate network delay for realistic UX
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
       
       return { 
         success: true, 

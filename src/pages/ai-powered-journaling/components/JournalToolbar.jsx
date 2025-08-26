@@ -71,7 +71,7 @@ const JournalToolbar = ({
   const t = translations?.[language];
 
   return (
-    <div className="flex items-center justify-between p-4 bg-card border-t border-border">
+    <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur-sm border-t border-border">
       {/* Left side - Formatting tools */}
       <div className="flex items-center space-x-2">
         <Button
@@ -79,6 +79,7 @@ const JournalToolbar = ({
           size="icon"
           title={t?.bold}
           className="text-muted-foreground hover:text-foreground"
+          onClick={() => onMoodTag?.('__format_bold__')}
         >
           <Icon name="Bold" size={16} />
         </Button>
@@ -88,6 +89,7 @@ const JournalToolbar = ({
           size="icon"
           title={t?.italic}
           className="text-muted-foreground hover:text-foreground"
+          onClick={() => onMoodTag?.('__format_italic__')}
         >
           <Icon name="Italic" size={16} />
         </Button>
@@ -97,6 +99,7 @@ const JournalToolbar = ({
           size="icon"
           title={t?.underline}
           className="text-muted-foreground hover:text-foreground"
+          onClick={() => onMoodTag?.('__format_underline__')}
         >
           <Icon name="Underline" size={16} />
         </Button>
@@ -108,6 +111,7 @@ const JournalToolbar = ({
           size="icon"
           title={t?.list}
           className="text-muted-foreground hover:text-foreground"
+          onClick={() => onMoodTag?.('__format_list__')}
         >
           <Icon name="List" size={16} />
         </Button>
@@ -117,6 +121,7 @@ const JournalToolbar = ({
           size="icon"
           title={t?.quote}
           className="text-muted-foreground hover:text-foreground"
+          onClick={() => onMoodTag?.('__format_quote__')}
         >
           <Icon name="Quote" size={16} />
         </Button>
