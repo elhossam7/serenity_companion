@@ -4,6 +4,7 @@ import Routes from './Routes';
 import './styles/index.css';
 import { I18nProvider } from './contexts/I18nContext';
 import ConsentGate from './components/ConsentGate';
+import { loadAnalytics } from './utils/analytics';
 
 function App() {
   React.useEffect(() => {
@@ -28,6 +29,7 @@ function App() {
     } catch (_) {}
     return () => { if (intervalId) clearInterval(intervalId); };
   }, []);
+  React.useEffect(() => { loadAnalytics(); }, []);
   return (
     <I18nProvider>
       <AuthProvider>

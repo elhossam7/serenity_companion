@@ -2,17 +2,21 @@ import React, { useEffect, useState } from 'react';
 import Header from '../../components/ui/Header';
 import BottomNavigation from '../../components/ui/BottomNavigation';
 import Button from '../../components/ui/Button';
+import { loadAnalytics } from '../../utils/analytics';
 
 const hasNotificationSupport = () => 'Notification' in window;
 
 const SettingsPage = () => {
   const [permission, setPermission] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'default');
   const [enabled, setEnabled] = useState(false);
+  const [analyticsOptIn, setAnalyticsOptIn] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('sc:reminders:enabled');
       setEnabled(saved === '1');
+  const a = localStorage.getItem('sc:analytics:enabled');
+  setAnalyticsOptIn(a === '1');
     } catch (_) {}
   }, []);
 
@@ -30,6 +34,12 @@ const SettingsPage = () => {
   const sendTest = () => {
     if (!hasNotificationSupport() || Notification.permission !== 'granted') return;
     new Notification('Serenity Companion', { body: 'Reminder test: take a mindful moment 💙' });
+  };
+
+  const toggleAnalytics = (on) => {
+    setAnalyticsOptIn(on);
+    try { localStorage.setItem('sc:analytics:enabled', on ? '1' : '0'); } catch (_) {}
+    if (on) loadAnalytics();
   };
 
   return (
@@ -51,6 +61,16 @@ const SettingsPage = () => {
             <Button variant="ghost" onClick={sendTest} disabled={permission !== 'granted'}>Send test</Button>
           </div>
           <p className="text-xs text-muted-foreground">Privacy: Reminders are local to your device; no identifiers are sent to servers.</p>
+        </section>
+
+        <section className="bg-card border border-border rounded-xl p-4 space-y-3 mt-6">
+          <h2 className="text-lg font-semibold">Analytics</h2>
+          <p className="text-sm text-muted-foreground">Privacy-friendly, anonymous usage analytics.</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={analyticsOptIn} onChange={e => toggleAnalytics(e.target.checked)} />
+            Opt-in to anonymous analytics
+          </label>
+          <p className="text-xs text-muted-foreground">We do not collect PII. You can opt out anytime.</p>
         </section>
       </main>
       <BottomNavigation />

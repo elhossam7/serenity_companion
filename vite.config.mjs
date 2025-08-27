@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tagger from "@dhiwise/component-tagger";
 import { VitePWA } from 'vite-plugin-pwa'
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -16,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     tsconfigPaths(),
     react(),
     mode === 'development' ? tagger() : undefined,
-    VitePWA({
+  VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
@@ -39,7 +40,15 @@ export default defineConfig(({ mode }) => ({
           { src: '/favicon.ico', sizes: '512x512', type: 'image/x-icon', purpose: 'any' }
         ]
       }
-    })
+    }),
+    // Enable Sentry plugin when release uploading is desired; requires auth tokens in env.
+    process.env.VITE_SENTRY_DSN ? sentryVitePlugin({
+      org: process.env.SENTRY_ORG || undefined,
+      project: process.env.SENTRY_PROJECT || undefined,
+      authToken: process.env.SENTRY_AUTH_TOKEN || undefined,
+      telemetry: false,
+      sourcemaps: { assets: ['./build/**/*.js', './build/**/*.map'] }
+    }) : undefined
   ].filter(Boolean),
   server: {
   // Use a fixed port if available; fallback automatically if in use

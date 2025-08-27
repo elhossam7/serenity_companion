@@ -131,12 +131,12 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P2 — PWA and Offline Readiness
 
-- [ ] Service worker + caching
+- [x] Service worker + caching
   - Actions:
     - Add Vite PWA plugin, cache shell/assets; respectful of privacy.
   - Acceptance: Installable PWA; offline reads for last-synced content (optional).
 
-- [ ] Push or local notifications (reminders)
+- [x] Push or local notifications (reminders)
   - Actions:
     - Local notifications or email reminders for mood logging.
   - Acceptance: Opt-in reminders functioning with clear settings.
@@ -145,12 +145,12 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P2 — Observability and Analytics
 
-- [ ] Error monitoring
+- [x] Error monitoring
   - Actions:
     - Integrate Sentry (frontend) with DSN via env.
   - Acceptance: Errors appear in dashboard with source maps.
 
-- [ ] Privacy-friendly analytics
+- [x] Privacy-friendly analytics
   - Actions:
     - Add Umami/FS Analytics with consent controls.
   - Acceptance: Basic usage metrics tracked without PII.
