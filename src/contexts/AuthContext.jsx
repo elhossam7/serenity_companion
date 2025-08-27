@@ -193,8 +193,27 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No authenticated user')
       }
 
+      // Only persist known columns to avoid PostgREST errors
+      const allowed = [
+        'email',
+        'full_name',
+        'display_name',
+        'date_of_birth',
+        'timezone',
+        'language',
+        'phone_number',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'preferred_therapist_id',
+        'is_active',
+        // profile_completion_percentage is set by DB trigger; don't write directly
+      ]
+      const sanitized = Object.fromEntries(
+        Object.entries(profileData || {}).filter(([k]) => allowed.includes(k))
+      )
+
       const { data, error } = await supabase?.from('user_profiles')?.update({
-          ...profileData,
+          ...sanitized,
           updated_at: new Date()?.toISOString()
         })?.eq('id', user?.id)?.select()?.single()
 
@@ -210,6 +229,20 @@ export const AuthProvider = ({ children }) => {
         ? 'Cannot connect to database. Please check your connection.' :'Failed to update profile'
       setAuthError(errorMessage)
       return { success: false, error: errorMessage }
+    }
+  }
+
+  // Update auth.user metadata (e.g., avatar_url, preferences not stored in user_profiles)
+  const setUserMetadata = async (metadata = {}) => {
+    try {
+      if (!user) return { success: false, error: 'Not authenticated' }
+      const { data, error } = await supabase?.auth?.updateUser({ data: metadata })
+      if (error) return { success: false, error: error?.message }
+      // Merge latest user metadata locally
+      if (data?.user) setUser(data.user)
+      return { success: true, data }
+    } catch (e) {
+      return { success: false, error: 'Failed to update profile settings' }
     }
   }
 
@@ -283,6 +316,7 @@ export const AuthProvider = ({ children }) => {
     signIn,
     signOut,
     updateProfile,
+  setUserMetadata,
   resendEmailConfirmation,
   requestPasswordReset,
   updatePassword,

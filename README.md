@@ -143,6 +143,29 @@ This app requires Node.js 18+.
 
 You can use Netlify or Vercel for preview deployments. Configure environment variables (`VITE_*`) in your hosting provider. The repo contains a CI workflow that runs lint, tests, build, and E2E; wire your provider to build on PRs for previews.
 
+
+### Supabase Storage (avatars)
+
+To enable avatar uploads on the Profile page, create a bucket named `avatars` and allow public read of uploaded files.
+
+SQL (run in Supabase SQL editor):
+
+```sql
+-- Create bucket if missing
+insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true)
+on conflict (id) do update set public = true;
+
+-- Allow authenticated users to upload to their own folder
+create policy "Users can upload avatars" on storage.objects for insert to authenticated
+   with check (
+      bucket_id = 'avatars' and (auth.uid())::text = split_part(name, '/', 1)
+   );
+
+-- Allow public read
+create policy "Public read avatars" on storage.objects for select using (bucket_id = 'avatars');
+```
+
+In the Profile page, files are stored at `avatars/{user_id}/...` and the public URL is used for display.
 ## 🧰 Vite Dev Server
 
 - The dev server runs on port 4028. If the port is taken, Vite will pick a free one automatically.
