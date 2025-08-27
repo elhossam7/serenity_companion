@@ -49,6 +49,24 @@
    npm start
    ```
 
+   5. **Quality gates:**
+      ```bash
+      # Lint
+      npm run lint
+
+      # Unit tests with coverage
+      npm run test:ci
+
+      # E2E tests (starts dev server via Playwright config)
+      npm run e2e
+      ```
+
+   6. **Node version:**
+      This project uses Node 20. Use nvm:
+      ```bash
+      nvm use
+      ```
+
 ## 📁 Project Structure
 
 ```
@@ -120,6 +138,10 @@ npm run build
 
 If you see an error about missing Supabase variables, ensure `.env` is configured with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 This app requires Node.js 18+.
+
+### Preview deploys
+
+You can use Netlify or Vercel for preview deployments. Configure environment variables (`VITE_*`) in your hosting provider. The repo contains a CI workflow that runs lint, tests, build, and E2E; wire your provider to build on PRs for previews.
 
 ## 🧰 Vite Dev Server
 

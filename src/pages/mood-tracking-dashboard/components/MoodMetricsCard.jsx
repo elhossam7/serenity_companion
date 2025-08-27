@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import Icon from '../../../components/AppIcon';
 
 const MoodMetricsCard = ({ title, value, subtitle, icon, color, trend }) => {
@@ -72,4 +72,4 @@ const MoodMetricsCard = ({ title, value, subtitle, icon, color, trend }) => {
   );
 };
 
-export default MoodMetricsCard;
+export default memo(MoodMetricsCard);

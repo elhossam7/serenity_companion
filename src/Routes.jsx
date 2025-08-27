@@ -1,21 +1,23 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, useLocation, useNavigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
-import NotFound from "pages/NotFound";
 import ProtectedRoute from './components/ProtectedRoute';
-import UserLogin from './pages/user-login';
-import MoodTrackingDashboard from './pages/mood-tracking-dashboard';
-import UserRegistration from './pages/user-registration';
-import AiPoweredJournaling from './pages/ai-powered-journaling';
-import ResetPasswordPage from './pages/reset-password';
-import AuthCallback from './pages/auth/callback';
-import DashboardHome from './pages/dashboard-home';
-import SettingsPage from './pages/settings';
-import PolicyPrivacy from 'pages/legal/PolicyPrivacy';
-import TermsOfService from 'pages/legal/TermsOfService';
-import Disclaimers from 'pages/legal/Disclaimers';
 import LegalFooter from 'components/ui/LegalFooter';
+
+// Route-level code splitting
+const NotFound = lazy(() => import('pages/NotFound'));
+const UserLogin = lazy(() => import('./pages/user-login'));
+const MoodTrackingDashboard = lazy(() => import('./pages/mood-tracking-dashboard'));
+const UserRegistration = lazy(() => import('./pages/user-registration'));
+const AiPoweredJournaling = lazy(() => import('./pages/ai-powered-journaling'));
+const ResetPasswordPage = lazy(() => import('./pages/reset-password'));
+const AuthCallback = lazy(() => import('./pages/auth/callback'));
+const DashboardHome = lazy(() => import('./pages/dashboard-home'));
+const SettingsPage = lazy(() => import('./pages/settings'));
+const PolicyPrivacy = lazy(() => import('pages/legal/PolicyPrivacy'));
+const TermsOfService = lazy(() => import('pages/legal/TermsOfService'));
+const Disclaimers = lazy(() => import('pages/legal/Disclaimers'));
 
 const Routes = () => {
   const RecoveryRedirect = () => {
@@ -39,6 +41,7 @@ const Routes = () => {
       <ErrorBoundary>
       <RecoveryRedirect />
       <ScrollToTop />
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>}>
   <RouterRoutes>
     {/* Public routes */}
         <Route path="/user-login" element={<UserLogin />} />
@@ -60,7 +63,8 @@ const Routes = () => {
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
-      </RouterRoutes>
+    </RouterRoutes>
+    </Suspense>
   <LegalFooter />
       </ErrorBoundary>
     </BrowserRouter>

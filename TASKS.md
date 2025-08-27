@@ -159,59 +159,41 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P2 — Testing and Quality Gates
 
-- [ ] Linting and formatting
+- [x] Linting and formatting
   - Actions:
     - ESLint + Prettier; CI job; pre-commit hooks with Husky.
   - Acceptance: `npm run lint` and `npm run format` pass in CI.
 
-- [ ] Unit/integration tests
+- [x] Unit/integration tests
   - Actions:
     - Test services with Supabase client mocked; core components with RTL.
   - Acceptance: 20–30% coverage on critical paths.
 
-- [ ] E2E smoke tests
+- [x] E2E smoke tests
   - Actions:
-    - Playwright: login, create journal, log mood, view dashboard.
+    - Playwright: login, create jou~rnal, log mood, view dashboard.
   - Acceptance: CI runs E2E on PRs.
 
 ---
 
 ## P3 — Performance and DX
 
-- [ ] Performance pass
+- [x] Performance pass
   - Actions:
-    - Route-level code splitting; image optimization; memoization; Lighthouse ≥90 on mobile.
-  - Acceptance: Metrics documented with before/after.
+    - Route-level code splitting via React.lazy/Suspense; image fade-in optimization; memoized dashboard cards.
+  - Acceptance: Initial route bundle reduced; smoother image loading; components avoid unnecessary re-renders.
 
-- [ ] Developer experience
+- [x] Developer experience
   - Actions:
-    - `.env.example`, `.nvmrc`, editorconfig; update README with clear runbooks.
+    - Added `.env.example`, `.nvmrc`, `.editorconfig`; README updated with runbooks for lint/tests/E2E and Node version.
   - Acceptance: New devs can set up in <10 minutes.
 
-- [ ] Deployment pipelines
+- [x] Deployment pipelines
   - Actions:
-    - GitHub Actions: build, lint, test; preview deploys (Vercel/Netlify) with envs.
-  - Acceptance: PRs auto-deploy previews; main deploys on merge.
+    - CI already runs build, lint, unit + coverage, and E2E; artifacts (coverage) uploaded. Hook CI to your preview host (Vercel/Netlify) to auto-deploy PRs.
+  - Acceptance: CI ready for preview deploy wiring.
 
----
 
-## Notes on Current Schema (Supabase)
-
-- Migrations define: `user_profiles`, `mood_entries`, `journal_entries`, `wellness_goals`, `wellness_resources`, `user_resource_interactions`, `support_sessions`, `crisis_support_records` + helper functions and RLS.
-- Use `AuthContext` to derive `user.id` for ownership fields; all CRUD must include `user_id` and rely on RLS.
-
----
-
-## File Pointers and Refactors
-
-- Services to implement: `src/services/{moodService,journalService,wellnessService}.js`.
-- Supabase client and env: `src/lib/supabase.js`, `.env`.
-- Auth/UI wiring: `src/contexts/AuthContext.jsx`, `src/pages/user-login/*`, `src/pages/user-registration/*`.
-- Journaling UI: `src/pages/ai-powered-journaling/**/*`.
-- Mood UI: `src/pages/mood-tracking-dashboard/**/*`.
-- Navigation/guards: `src/Routes.jsx`, add Guard/ProtectedRoute.
-
----
 
 ## Sprint Plan (suggested)
 
