@@ -106,21 +106,27 @@ const AiPoweredJournaling = () => {
     };
     switch (format) {
       case 'pdf':
-        console.log('Exporting as PDF:', exportData);
+        {
+          console.log('Exporting as PDF:', exportData);
+        }
         break;
       case 'txt':
-        const blob = new Blob([journalContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `journal-entry-${new Date()?.toISOString()?.split('T')?.[0]}.txt`;
-        a?.click();
-        URL.revokeObjectURL(url);
+        {
+          const blob = new Blob([journalContent], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `journal-entry-${new Date()?.toISOString()?.split('T')?.[0]}.txt`;
+          a?.click();
+          URL.revokeObjectURL(url);
+        }
         break;
       case 'email':
-        const subject = encodeURIComponent('Journal Entry');
-        const body = encodeURIComponent(journalContent);
-        window.open(`mailto:?subject=${subject}&body=${body}`);
+        {
+          const subject = encodeURIComponent('Journal Entry');
+          const body = encodeURIComponent(journalContent);
+          window.open(`mailto:?subject=${subject}&body=${body}`);
+        }
         break;
     }
   }, [journalContent, currentMood, language]);

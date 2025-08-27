@@ -40,8 +40,8 @@ const WelcomeSection = () => {
   const translations = {
     fr: {
       welcomeBack: 'Bon retour',
-      todayIs: "Aujourd\'hui c\'est",
-      howAreYou: 'Comment vous sentez-vous aujourd\'hui ?',
+  todayIs: "Aujourd'hui c'est",
+  howAreYou: "Comment vous sentez-vous aujourd'hui ?",
       startYourDay: 'Commencez votre journée avec intention'
     },
     ar: {

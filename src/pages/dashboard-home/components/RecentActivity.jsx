@@ -25,7 +25,7 @@ const RecentActivity = () => {
         id: 2,
         type: 'mood',
         title: language === 'ar' ? 'تسجيل المزاج' : 'Enregistrement humeur',
-        preview: language === 'ar' ? 'مزاج جيد - شعور بالطاقة والتفاؤل' : 'Bonne humeur - sentiment d\'énergie et d\'optimisme',
+  preview: language === 'ar' ? 'مزاج جيد - شعور بالطاقة والتفاؤل' : "Bonne humeur - sentiment d'énergie et d'optimisme",
         timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
         mood: 7,
         icon: 'Smile',
@@ -35,7 +35,7 @@ const RecentActivity = () => {
         id: 3,
         type: 'chat',
         title: language === 'ar' ? 'جلسة دعم' : 'Session de support',
-        preview: language === 'ar' ?'تحدثت مع المساعد الذكي حول تقنيات إدارة التوتر...' : "J\'ai parlé avec l\'assistant IA des techniques de gestion du stress...",
+  preview: language === 'ar' ?'تحدثت مع المساعد الذكي حول تقنيات إدارة التوتر...' : "J'ai parlé avec l'assistant IA des techniques de gestion du stress...",
         timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
         mood: 6,
         icon: 'MessageCircle',

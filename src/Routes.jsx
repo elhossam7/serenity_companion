@@ -14,6 +14,7 @@ const AiPoweredJournaling = lazy(() => import('./pages/ai-powered-journaling'));
 const ResetPasswordPage = lazy(() => import('./pages/reset-password'));
 const AuthCallback = lazy(() => import('./pages/auth/callback'));
 const DashboardHome = lazy(() => import('./pages/dashboard-home'));
+const ProfilePage = lazy(() => import('./pages/profile'));
 const SettingsPage = lazy(() => import('./pages/settings'));
 const PolicyPrivacy = lazy(() => import('pages/legal/PolicyPrivacy'));
 const TermsOfService = lazy(() => import('pages/legal/TermsOfService'));
@@ -58,6 +59,7 @@ const Routes = () => {
           <Route path="/ai-powered-journaling" element={<AiPoweredJournaling />} />
           <Route path="/mood-tracking-dashboard" element={<MoodTrackingDashboard />} />
           <Route path="/dashboard-home" element={<DashboardHome />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 

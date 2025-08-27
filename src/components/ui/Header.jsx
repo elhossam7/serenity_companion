@@ -209,7 +209,7 @@ const Header = () => {
                     size="sm"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      // Navigate to profile when implemented
+                      navigate('/profile');
                     }}
                     iconName="User"
                     iconPosition="left"
@@ -224,7 +224,7 @@ const Header = () => {
                     size="sm"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      // Navigate to settings when implemented
+                      navigate('/settings');
                     }}
                     iconName="Settings"
                     iconPosition="left"

@@ -30,7 +30,7 @@ const WellnessSnapshot = () => {
     // Mock daily affirmation
     const affirmations = {
       fr: [
-        "Vous avez la force intérieure pour surmonter tous les défis d\'aujourd\'hui.",
+  "Vous avez la force intérieure pour surmonter tous les défis d'aujourd'hui.",
         "Chaque respiration vous apporte paix et sérénité.",
         "Votre bien-être mental est une priorité précieuse.",
         "Vous méritez compassion et bienveillance, surtout de votre part."
