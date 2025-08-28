@@ -21,7 +21,25 @@ const WellnessSnapshot = () => {
     let mounted = true;
     const fetchData = async () => {
       try {
-        if (!user?.id) return;
+        // Always compute a local streak from localStorage first (works offline/anon)
+        const computeLocalStreak = () => {
+          try {
+            const raw = localStorage.getItem('journal_entries');
+            const list = raw ? JSON.parse(raw) : [];
+            const normalized = (list || []).map(e => ({
+              created_at: e.createdAt || e.created_at || e.date || new Date().toISOString()
+            }));
+            return computeDailyStreak(normalized);
+          } catch {
+            return 0;
+          }
+        };
+
+        if (mounted) setJournalStreak(computeLocalStreak());
+
+        if (!user?.id) {
+          return;
+        }
         // Last 7 days mood trend
         const start = new Date();
         start.setDate(start.getDate() - 6);
@@ -47,7 +65,10 @@ const WellnessSnapshot = () => {
         const { data: journalEntries } = await journalService.getJournalEntries(user.id, { limit: 90 });
         const streak = computeDailyStreak(journalEntries || []);
         if (!mounted) return;
-        setJournalStreak(streak);
+        // Prefer remote streak when available, otherwise keep/local fallback
+        if (streak > 0) {
+          setJournalStreak(streak);
+        }
 
         // Active goals count
         const goalsRes = await wellnessService.getWellnessGoals(user.id, { activeOnly: true });
@@ -62,7 +83,23 @@ const WellnessSnapshot = () => {
       }
     };
     fetchData();
-    return () => { mounted = false; };
+
+    // Live-update streak when a new journal entry is saved from the editor
+    const handleSaved = () => {
+      try {
+        const raw = localStorage.getItem('journal_entries');
+        const list = raw ? JSON.parse(raw) : [];
+        const normalized = (list || []).map(e => ({
+          created_at: e.createdAt || e.created_at || e.date || new Date().toISOString()
+        }));
+        if (mounted) setJournalStreak(computeDailyStreak(normalized));
+      } catch {}
+    };
+    window.addEventListener('journal:entry:saved', handleSaved);
+    return () => {
+      mounted = false;
+      window.removeEventListener('journal:entry:saved', handleSaved);
+    };
   }, [user?.id, i18n.language]);
 
   const computeDailyStreak = (entries) => {
