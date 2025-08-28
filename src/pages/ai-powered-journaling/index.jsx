@@ -93,6 +93,11 @@ const AiPoweredJournaling = () => {
       existingEntries?.unshift(entry);
       localStorage.setItem('journal_entries', JSON.stringify(existingEntries));
       localStorage.removeItem('journal_draft');
+      // Notify history panels to refresh and ensure it becomes visible
+      try {
+        window.dispatchEvent(new CustomEvent('journal:entry:saved', { detail: entry }));
+      } catch (_) {}
+      setShowEntryHistory(true);
       setIsSaving(false);
     }, 1500);
   }, [journalContent, currentMood, isPrivate, language]);

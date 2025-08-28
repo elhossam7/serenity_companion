@@ -10,57 +10,49 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
   const [filteredEntries, setFilteredEntries] = useState([]);
 
   useEffect(() => {
-    // Load mock journal entries
-    const mockEntries = [
-      {
-        id: 1,
-        date: new Date('2025-01-20'),
-        title: language === 'fr' ? 'Réflexions du matin' : 'تأملات الصباح',
-        preview: language === 'fr' ?'Aujourd\'hui, je me sens reconnaissant pour les petites choses de la vie. Le thé à la menthe de ce matin avait un goût particulièrement délicieux...' :'اليوم، أشعر بالامتنان للأشياء الصغيرة في الحياة. كان طعم الأتاي هذا الصباح لذيذاً بشكل خاص...',
-        mood: 'positive',
-        wordCount: 245,
-        tags: ['gratitude', 'morning', 'tea']
-      },
-      {
-        id: 2,
-        date: new Date('2025-01-19'),
-        title: language === 'fr' ? 'Défis au travail' : 'تحديات العمل',
-        preview: language === 'fr' ?'La journée a été difficile au bureau. Je me sens dépassé par les nouvelles responsabilités, mais je sais que c\'est temporaire...' :'كان اليوم صعباً في المكتب. أشعر بالإرهاق من المسؤوليات الجديدة، لكنني أعلم أن هذا مؤقت...',
-        mood: 'negative',
-        wordCount: 189,
-        tags: ['work', 'stress', 'challenges']
-      },
-      {
-        id: 3,
-        date: new Date('2025-01-18'),
-        title: language === 'fr' ? 'Temps en famille' : 'وقت العائلة',
-        preview: language === 'fr' ?'Nous avons passé l\'après-midi ensemble, toute la famille réunie autour d\'un tajine. Ces moments sont précieux...' :'قضينا بعد الظهر معاً، كل العائلة مجتمعة حول الطاجين. هذه اللحظات ثمينة...',
-        mood: 'positive',
-        wordCount: 312,
-        tags: ['family', 'food', 'togetherness']
-      },
-      {
-        id: 4,
-        date: new Date('2025-01-17'),
-        title: language === 'fr' ? 'Méditation du soir' : 'تأمل المساء',
-        preview: language === 'fr' ?'J\'ai pris du temps pour méditer ce soir. La paix intérieure que je ressens maintenant est apaisante...' :'أخذت وقتاً للتأمل هذا المساء. السلام الداخلي الذي أشعر به الآن مهدئ...',
-        mood: 'neutral',
-        wordCount: 156,
-        tags: ['meditation', 'peace', 'evening']
-      },
-      {
-        id: 5,
-        date: new Date('2025-01-16'),
-        title: language === 'fr' ? 'Promenade dans la médina' : 'نزهة في المدينة القديمة',
-        preview: language === 'fr' ?'Les ruelles de la médina m\'ont rappelé mon enfance. Chaque coin raconte une histoire...' :'أزقة المدينة القديمة ذكرتني بطفولتي. كل زاوية تحكي قصة...',
-        mood: 'positive',
-        wordCount: 278,
-        tags: ['medina', 'memories', 'childhood']
-      }
-    ];
+    // Load saved journal entries from localStorage
+    try {
+      const raw = localStorage.getItem('journal_entries');
+      const list = raw ? JSON.parse(raw) : [];
+      const normalized = (list || []).map(e => ({
+        id: e.id,
+        date: new Date(e.createdAt || e.date || Date.now()),
+        title: e.title || (language === 'fr' ? 'Entrée' : 'مدخل'),
+        preview: e.content?.slice(0, 200) || e.preview || '',
+        mood: e.mood || 'neutral',
+        wordCount: (e.content || e.preview || '').trim().split(/\s+/).filter(Boolean).length,
+        tags: Array.isArray(e.tags) ? e.tags : []
+      }));
+      setEntries(normalized);
+      setFilteredEntries(normalized);
+    } catch (_) {
+      setEntries([]);
+      setFilteredEntries([]);
+    }
 
-    setEntries(mockEntries);
-    setFilteredEntries(mockEntries);
+    const onSaved = () => {
+      try {
+        const raw = localStorage.getItem('journal_entries');
+        const list = raw ? JSON.parse(raw) : [];
+        const normalized = (list || []).map(e => ({
+          id: e.id,
+          date: new Date(e.createdAt || e.date || Date.now()),
+          title: e.title || (language === 'fr' ? 'Entrée' : 'مدخل'),
+          preview: e.content?.slice(0, 200) || e.preview || '',
+          mood: e.mood || 'neutral',
+          wordCount: (e.content || e.preview || '').trim().split(/\s+/).filter(Boolean).length,
+          tags: Array.isArray(e.tags) ? e.tags : []
+        }));
+        setEntries(normalized);
+        setFilteredEntries(prev => {
+          // If a filter/search is active, reapply it by triggering the other effect with updated entries
+          return normalized;
+        });
+      } catch (_) {}
+    };
+
+    window.addEventListener('journal:entry:saved', onSaved);
+    return () => window.removeEventListener('journal:entry:saved', onSaved);
   }, [language]);
 
   useEffect(() => {
