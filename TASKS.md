@@ -207,7 +207,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
 
 ## P2 — Additional Features and Components (Identified from MVP Analysis)
 
-- [ ] User profile and settings page
+- [x] User profile and settings page
   - Scope: Missing `/profile` and `/settings` routes referenced in Header dropdown.
   - Actions:
     - Create profile management page with photo upload, emergency contacts, preferences.
@@ -215,7 +215,7 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
     - Wire to `user_profiles` table and profile completion percentage.
   - Acceptance: Profile editing works; settings persist; completion percentage updates.
 
-- [ ] AI Chat Support page implementation
+- [x] AI Chat Support page implementation
   - Scope: Routes reference `/ai-chat-support` but page doesn't exist.
   - Actions:
     - Create chat interface component with message history.
@@ -223,21 +223,13 @@ Legend: [P0]=Blocker, [P1]=High, [P2]=Medium, [P3]=Nice-to-have
     - Add crisis detection and escalation to emergency resources.
   - Acceptance: Chat interface functional; messages persist; crisis detection works.
 
-- [ ] Advanced dashboard components enhancement
+- [x] Advanced dashboard components enhancement
   - Scope: Several dashboard components use mock data with TODO patterns.
   - Actions:
     - Complete `WellnessSnapshot` with real wellness goals integration.
     - Enhance `PersonalizedRecommendations` with ML-based suggestions.
     - Add real activity tracking to `RecentActivity` component.
   - Acceptance: Dashboard shows live wellness metrics and personalized content.
-
-- [ ] Therapist support session booking
-  - Scope: Database has `support_sessions` table but no UI for booking.
-  - Actions:
-    - Create therapist directory and booking interface.
-    - Calendar integration for session scheduling.
-    - Session management (reschedule, cancel, join virtual sessions).
-  - Acceptance: Users can book, manage, and attend therapy sessions.
 
 - [ ] Advanced mood analytics and insights
   - Scope: `AIInsightsPanel` and mood components need ML integration.

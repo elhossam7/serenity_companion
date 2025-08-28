@@ -7,7 +7,7 @@ export const aiService = {
   
   // Generate AI suggestions for journaling
   async generateSuggestions(options = {}) {
-    const { language = 'fr', mood = 'neutral', content = '', provider = 'auto', force = false } = options;
+    const { language = 'fr', mood = 'neutral', content = '', provider = 'auto', force = false, history = [] } = options;
     
     // Check if we're in development mode or if Supabase is properly configured
     const isDev = import.meta.env.DEV;
@@ -40,7 +40,8 @@ export const aiService = {
           language,
           mood,
           content,
-          provider
+          provider,
+          history: Array.isArray(history) ? history.slice(-10) : []
         }
       });
 
@@ -968,5 +969,55 @@ export const aiService = {
     };
 
     return culturalPrompts?.[language] || culturalPrompts.fr;
+  }
+  ,
+  async *generateSuggestionsStream(options = {}) {
+    const { language = 'fr', mood = 'neutral', content = '', provider = 'auto', history = [] } = options;
+    const isDev = import.meta.env.DEV;
+    const hasSupabaseConfig = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (isDev || !hasSupabaseConfig) {
+      const fallback = this.getEnhancedFallbackSuggestions(language, mood, content);
+      const text = (fallback?.[0]?.content) || '';
+      if (text) { yield text; }
+      return;
+    }
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-suggest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ language, mood, content, provider, stream: true, history: Array.isArray(history) ? history.slice(-10) : [] })
+      });
+      if (!resp.ok) {
+        const fallback = this.getEnhancedFallbackSuggestions(language, mood, content);
+        const text = (fallback?.[0]?.content) || '';
+        if (text) { yield text; }
+        return;
+      }
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i];
+          if (line.startsWith('data: ')) {
+            const json = line.slice(6).trim();
+            try {
+              const evt = JSON.parse(json);
+              if (evt?.content) { yield evt.content; }
+            } catch (_) {}
+          }
+        }
+        buf = lines[lines.length - 1];
+      }
+    } catch (_) {
+      // ignore
+    }
   }
 };

@@ -179,8 +179,8 @@ const ProfilePage = () => {
             <Input label={t('profile.phone')} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+212 ..." />
             <Input type="date" label={t('profile.dob')} value={dateOfBirth || ''} onChange={(e) => setDateOfBirth(e.target.value)} />
             <div>
-              <label className="block text-sm font-medium mb-1">{t('profile.timezone')}</label>
-              <select className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+              <label htmlFor="timezone-select" className="block text-sm font-medium mb-1">{t('profile.timezone')}</label>
+              <select id="timezone-select" name="timezone" className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
                 <option value="UTC">UTC</option>
                 <option value="Africa/Casablanca">Africa/Casablanca</option>
                 <option value="Europe/Paris">Europe/Paris</option>
@@ -216,24 +216,24 @@ const ProfilePage = () => {
           <h2 className="text-lg font-semibold">{t('profile.preferences')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">{t('profile.language')}</label>
-              <select className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={language} onChange={(e) => setLangLocal(e.target.value)}>
+              <label htmlFor="profile-language-select" className="block text-sm font-medium mb-1">{t('profile.language')}</label>
+              <select id="profile-language-select" name="language" className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={language} onChange={(e) => setLangLocal(e.target.value)}>
                 <option value="fr">Français</option>
                 <option value="ar">العربية</option>
                 <option value="en">English</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{t('profile.theme')}</label>
-              <select className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={theme} onChange={(e) => setTheme(e.target.value)}>
+              <label htmlFor="profile-theme-select" className="block text-sm font-medium mb-1">{t('profile.theme')}</label>
+              <select id="profile-theme-select" name="theme" className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={theme} onChange={(e) => setTheme(e.target.value)}>
                 <option value="system">{t('settings.system')}</option>
                 <option value="light">{t('settings.light')}</option>
                 <option value="dark">{t('settings.dark')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{t('profile.defaultPrivacy')}</label>
-              <select className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={defaultPrivacy} onChange={(e) => setDefaultPrivacy(e.target.value)}>
+              <label htmlFor="default-privacy-select" className="block text-sm font-medium mb-1">{t('profile.defaultPrivacy')}</label>
+              <select id="default-privacy-select" name="default_journal_privacy" className="w-full h-10 px-3 py-2 border border-input rounded-md bg-background text-sm" value={defaultPrivacy} onChange={(e) => setDefaultPrivacy(e.target.value)}>
                 <option value="private">Private</option>
                 <option value="friends">Friends</option>
                 <option value="public">Public</option>

@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { fileURLToPath, URL } from 'node:url';
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tagger from "@dhiwise/component-tagger";
@@ -59,10 +60,30 @@ export default defineConfig(({ mode }) => ({
   // allowedHosts: ['your-domain.com']
   }
   ,
+  resolve: {
+    alias: {
+      components: fileURLToPath(new URL('./src/components', import.meta.url)),
+      contexts: fileURLToPath(new URL('./src/contexts', import.meta.url)),
+      services: fileURLToPath(new URL('./src/services', import.meta.url)),
+      lib: fileURLToPath(new URL('./src/lib', import.meta.url)),
+      pages: fileURLToPath(new URL('./src/pages', import.meta.url)),
+      utils: fileURLToPath(new URL('./src/utils', import.meta.url)),
+      src: fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.js'],
     globals: true,
-    include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)']
+    include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    alias: {
+      components: fileURLToPath(new URL('./src/components', import.meta.url)),
+      contexts: fileURLToPath(new URL('./src/contexts', import.meta.url)),
+      services: fileURLToPath(new URL('./src/services', import.meta.url)),
+      lib: fileURLToPath(new URL('./src/lib', import.meta.url)),
+      pages: fileURLToPath(new URL('./src/pages', import.meta.url)),
+      utils: fileURLToPath(new URL('./src/utils', import.meta.url)),
+      src: fileURLToPath(new URL('./src', import.meta.url))
+    }
   }
 }));

@@ -206,6 +206,9 @@ export const AuthProvider = ({ children }) => {
         'emergency_contact_phone',
         'preferred_therapist_id',
         'is_active',
+  // Consent tracking
+  'has_consented',
+  'consent_accepted_at',
         // profile_completion_percentage is set by DB trigger; don't write directly
       ]
       const sanitized = Object.fromEntries(

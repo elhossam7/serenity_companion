@@ -13,9 +13,15 @@
     "resolveJsonModule": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "vitest/globals"],
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
-      "*": ["src/*"]
+      "components/*": ["src/components/*"],
+      "contexts/*": ["src/contexts/*"],
+      "services/*": ["src/services/*"],
+      "lib/*": ["src/lib/*"],
+      "pages/*": ["src/pages/*"],
+      "utils/*": ["src/utils/*"],
+      "src/*": ["src/*"]
     }
   },
   "include": [

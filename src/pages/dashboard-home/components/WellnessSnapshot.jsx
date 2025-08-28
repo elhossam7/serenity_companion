@@ -1,53 +1,122 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { moodService } from '../../../services/moodService';
+import { journalService } from '../../../services/journalService';
+import { wellnessService } from '../../../services/wellnessService';
 
 const WellnessSnapshot = () => {
-  const [language, setLanguage] = useState('fr');
+  const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [moodData, setMoodData] = useState([]);
   const [journalStreak, setJournalStreak] = useState(0);
   const [dailyAffirmation, setDailyAffirmation] = useState('');
+  const [activeGoals, setActiveGoals] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
+    let mounted = true;
+    const fetchData = async () => {
+      try {
+        if (!user?.id) return;
+        // Last 7 days mood trend
+        const start = new Date();
+        start.setDate(start.getDate() - 6);
+        const startISO = start.toISOString().split('T')[0];
+        const { data: moods } = await moodService.getMoodEntries(user.id, { startDate: startISO });
 
-    // Mock mood data for the last 7 days
-    const mockMoodData = [
-      { day: 'Lun', mood: 7, date: '15/08' },
-      { day: 'Mar', mood: 6, date: '16/08' },
-      { day: 'Mer', mood: 8, date: '17/08' },
-      { day: 'Jeu', mood: 5, date: '18/08' },
-      { day: 'Ven', mood: 7, date: '19/08' },
-      { day: 'Sam', mood: 9, date: '20/08' },
-      { day: 'Dim', mood: 8, date: '21/08' }
-    ];
-    setMoodData(mockMoodData);
+        const moodScale = { very_low: 2, low: 4, neutral: 6, good: 8, excellent: 9 };
+        // Build a day-by-day series for the last 7 days
+        const series = Array.from({ length: 7 }).map((_, idx) => {
+          const d = new Date(start);
+          d.setDate(start.getDate() + idx);
+          const key = d.toISOString().split('T')[0];
+          const entry = (moods || []).find(m => m.entry_date === key);
+          const moodVal = entry ? (moodScale[entry.mood_level] || 5) : 0;
+          const dayLabel = d.toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { weekday: 'short' });
+          const dateLabel = d.toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { day: '2-digit', month: '2-digit' });
+          return { day: dayLabel, mood: moodVal, date: dateLabel };
+        });
+        if (!mounted) return;
+        setMoodData(series);
 
-    // Mock journal streak
-    setJournalStreak(12);
+        // Journal streak from recent entries
+        const { data: journalEntries } = await journalService.getJournalEntries(user.id, { limit: 90 });
+        const streak = computeDailyStreak(journalEntries || []);
+        if (!mounted) return;
+        setJournalStreak(streak);
 
-    // Mock daily affirmation
-    const affirmations = {
-      fr: [
-  "Vous avez la force intérieure pour surmonter tous les défis d'aujourd'hui.",
-        "Chaque respiration vous apporte paix et sérénité.",
-        "Votre bien-être mental est une priorité précieuse.",
-        "Vous méritez compassion et bienveillance, surtout de votre part."
+        // Active goals count
+        const goalsRes = await wellnessService.getWellnessGoals(user.id, { activeOnly: true });
+        if (!mounted) return;
+        setActiveGoals((goalsRes?.data || []).length);
+
+        // Daily affirmation based on recent mood
+        const avgMood = series.filter(s => s.mood > 0).reduce((sum, s) => sum + s.mood, 0) / Math.max(1, series.filter(s => s.mood > 0).length);
+        setDailyAffirmation(pickAffirmation(language, avgMood));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { mounted = false; };
+  }, [user?.id, i18n.language]);
+
+  const computeDailyStreak = (entries) => {
+    if (!entries || entries.length === 0) return 0;
+    const days = new Set(entries.map(e => new Date(e.created_at).toISOString().split('T')[0]));
+    let streak = 0;
+    let d = new Date();
+    for (;;) {
+      const key = d.toISOString().split('T')[0];
+      if (days.has(key)) { streak += 1; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return streak;
+  };
+
+  const pickAffirmation = (lang, avgMood) => {
+    const pool = {
+      fr: avgMood && avgMood < 6 ? [
+        "Vous traversez cela avec courage. Un pas à la fois suffit.",
+        "Respirez profondément—chaque souffle vous recentre.",
+        "Vos émotions sont valides. Vous méritez douceur et repos."
+      ] : [
+        "Chaque petit progrès compte, continuez.",
+        "Votre paix intérieure est votre force.",
+        "Vous pouvez cultiver la joie aujourd'hui, même en simplicité."
       ],
-      ar: [
-        "لديك القوة الداخلية للتغلب على جميع تحديات اليوم.",
-        "كل نفس يجلب لك السلام والهدوء.",
-        "صحتك النفسية أولوية ثمينة.",
-        "تستحق الرحمة واللطف، خاصة من نفسك."
+      ar: avgMood && avgMood < 6 ? [
+        "أنت تتجاوز هذا بشجاعة. خطوة واحدة تكفي.",
+        "تنفّس عميقًا—كل نفس يعيدك إلى التوازن.",
+        "مشاعرك مُقدّرة. أنت تستحق اللطف والراحة."
+      ] : [
+        "كل تقدم بسيط يُحدث فرقًا—استمر.",
+        "سلامك الداخلي هو قوتك.",
+        "يمكنك زراعة الفرح اليوم حتى في البساطة."
       ]
     };
-
-    const todayAffirmation = affirmations?.[savedLanguage]?.[Math.floor(Math.random() * affirmations?.[savedLanguage]?.length)];
-    setDailyAffirmation(todayAffirmation);
-  }, []);
+    const arr = pool[lang] || pool.fr;
+    return arr[Math.floor(Math.random() * arr.length)];
+  };
 
   const translations = {
+    en: {
+      wellnessSnapshot: 'Wellness Snapshot',
+      moodTrend: 'Mood Trend (7d)',
+      journalStreak: 'Journal Streak',
+      days: 'days',
+      dailyAffirmation: 'Daily Affirmation',
+      excellent: 'Excellent',
+      good: 'Good',
+      average: 'Average',
+      low: 'Low',
+      activeGoals: 'active goals',
+      loading: 'Loading...'
+    },
     fr: {
       wellnessSnapshot: 'Aperçu du Bien-être',
       moodTrend: 'Tendance Humeur (7j)',
@@ -57,7 +126,9 @@ const WellnessSnapshot = () => {
       excellent: 'Excellent',
       good: 'Bien',
       average: 'Moyen',
-      low: 'Faible'
+      low: 'Faible',
+      activeGoals: 'objectifs actifs',
+      loading: 'Chargement...'
     },
     ar: {
       wellnessSnapshot: 'لمحة عن الصحة النفسية',
@@ -68,7 +139,9 @@ const WellnessSnapshot = () => {
       excellent: 'ممتاز',
       good: 'جيد',
       average: 'متوسط',
-      low: 'منخفض'
+      low: 'منخفض',
+      activeGoals: 'أهداف نشطة',
+      loading: 'جار التحميل...'
     }
   };
 
@@ -91,9 +164,15 @@ const WellnessSnapshot = () => {
 
   return (
     <div className="space-y-4 mb-6">
-      <h2 className="text-lg font-heading font-semibold text-foreground mb-4">
-        {t?.wellnessSnapshot}
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-heading font-semibold text-foreground">
+          {t?.wellnessSnapshot}
+        </h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-caption text-muted-foreground">{activeGoals} {t?.activeGoals}</span>
+          <div className="w-2 h-2 rounded-full bg-success" />
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Mood Trend Chart */}
         <div className="md:col-span-2 bg-card rounded-xl p-4 border border-border gentle-hover">
@@ -154,7 +233,7 @@ const WellnessSnapshot = () => {
           </div>
         </div>
       </div>
-      {/* Daily Affirmation */}
+  {/* Daily Affirmation */}
       <div className="bg-gradient-to-r from-accent/10 to-primary/10 rounded-xl p-4 border border-border/50">
         <div className="flex items-start space-x-3">
           <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center mt-1">
@@ -165,7 +244,7 @@ const WellnessSnapshot = () => {
               {t?.dailyAffirmation}
             </h3>
             <p className="text-sm font-body text-muted-foreground leading-relaxed">
-              {dailyAffirmation}
+              {loading ? t?.loading : dailyAffirmation}
             </p>
           </div>
         </div>

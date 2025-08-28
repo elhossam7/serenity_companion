@@ -95,9 +95,12 @@ const ResetPasswordPage = () => {
                 <a href="/user-login" className="text-primary underline">{t?.gotoLogin}</a>
               </div>
             ) : (
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form onSubmit={onSubmit} className="space-y-4" aria-label="Reset password form">
                 <h1 className="text-xl font-heading font-semibold text-foreground">{t?.setNew}</h1>
+                <label htmlFor="new-password" className="sr-only">{t?.newPass}</label>
                 <input
+                  id="new-password"
+                  name="new_password"
                   type="password"
                   autoComplete="new-password"
                   placeholder={t?.newPass}
@@ -107,7 +110,10 @@ const ResetPasswordPage = () => {
                   required
                   minLength={8}
                 />
+                <label htmlFor="confirm-password" className="sr-only">{t?.confirmPass}</label>
                 <input
+                  id="confirm-password"
+                  name="confirm_password"
                   type="password"
                   autoComplete="new-password"
                   placeholder={t?.confirmPass}

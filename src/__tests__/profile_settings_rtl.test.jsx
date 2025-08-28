@@ -1,3 +1,5 @@
+/* @vitest-environment jsdom */
+// @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
@@ -6,9 +8,25 @@ import { AuthProvider } from '../contexts/AuthContext'
 import ProfilePage from '../pages/profile'
 import SettingsPage from '../pages/settings'
 import i18n from '../i18n'
-
 // Mock router wrappers for Header dependency
 import { MemoryRouter } from 'react-router-dom'
+
+// Provide a localStorage polyfill for the test environment
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map()
+  const mockStorage = {
+    getItem: (key) => (store.has(key) ? store.get(key) : null),
+    setItem: (key, value) => { store.set(key, String(value)) },
+    removeItem: (key) => { store.delete(key) },
+    clear: () => { store.clear() },
+    key: (i) => Array.from(store.keys())[i] ?? null,
+    get length() { return store.size }
+  }
+  Object.defineProperty(globalThis, 'localStorage', { value: mockStorage, configurable: true })
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'localStorage', { value: mockStorage, configurable: true })
+  }
+}
 
 // Mock supabase to avoid real calls
 vi.mock('../lib/supabase', () => ({

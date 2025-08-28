@@ -82,8 +82,8 @@ const SettingsPage = () => {
             <Button variant="primary" onClick={requestPermission} disabled={!hasNotificationSupport() || permission === 'granted'}>
               {permission === 'granted' ? t('settings.notificationsEnabled') : t('settings.enableNotifications')}
             </Button>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={enabled} onChange={e => toggleEnabled(e.target.checked)} disabled={permission !== 'granted'} />
+            <label className="flex items-center gap-2 text-sm" htmlFor="reminders-enabled">
+              <input id="reminders-enabled" name="reminders_enabled" type="checkbox" checked={enabled} onChange={e => toggleEnabled(e.target.checked)} disabled={permission !== 'granted'} />
               {t('settings.optInReminders')}
             </label>
             <Button variant="ghost" onClick={sendTest} disabled={permission !== 'granted'}>{t('settings.sendTest')}</Button>
@@ -94,8 +94,8 @@ const SettingsPage = () => {
         <section className="bg-card border border-border rounded-xl p-4 space-y-3 mt-6">
           <h2 className="text-lg font-semibold">{t('settings.analytics')}</h2>
           <p className="text-sm text-muted-foreground">{t('settings.analyticsDesc')}</p>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={analyticsOptIn} onChange={e => toggleAnalytics(e.target.checked)} />
+          <label className="flex items-center gap-2 text-sm" htmlFor="analytics-opt-in">
+            <input id="analytics-opt-in" name="analytics_opt_in" type="checkbox" checked={analyticsOptIn} onChange={e => toggleAnalytics(e.target.checked)} />
             {t('settings.analyticsOptIn')}
           </label>
           <p className="text-xs text-muted-foreground">We do not collect PII. You can opt out anytime.</p>

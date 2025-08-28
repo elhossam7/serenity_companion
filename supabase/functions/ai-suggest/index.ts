@@ -59,6 +59,8 @@ type SuggestRequest = {
   content?: string; // current journal text
   // Optional provider override per-request: 'auto' | 'gemini' | 'openai' | 'hybrid'
   provider?: string;
+  stream?: boolean;
+  history?: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
 };
 
 type Suggestion = { id: string; type: 'continuation' | 'reflection' | 'support' | 'coping' | 'exploration'; content: string; icon: string };
@@ -94,7 +96,7 @@ serve(async (req) => {
     }
     const user = userRes.user;
 
-    const payload = (await req.json()) as SuggestRequest;
+  const payload = (await req.json()) as SuggestRequest;
     const language = payload.language === 'ar' ? 'ar' : 'fr';
     const mood = payload.mood || 'neutral';
     const content = (payload.content || '').slice(0, 4000); // cap input length
@@ -246,11 +248,38 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
       return out;
     };
 
+    // Helper to stream content via SSE (chunking a final string)
+    const streamContent = async (text: string, tokensUsed = 0) => {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          // small chunks to simulate streaming; adjust as needed
+          const chunkSize = 12;
+          for (let i = 0; i < text.length; i += chunkSize) {
+            const piece = text.slice(i, i + chunkSize);
+            const evt = `event: chunk\ndata: ${JSON.stringify({ content: piece })}\n\n`;
+            controller.enqueue(encoder.encode(evt));
+            // tiny delay to show progress
+            await new Promise((r) => setTimeout(r, 30));
+          }
+          const endEvt = `event: end\ndata: ${JSON.stringify({ done: true })}\n\n`;
+          controller.enqueue(encoder.encode(endEvt));
+          controller.close();
+        }
+      });
+      try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: tokensUsed || 0 }); } catch {}
+      return new Response(stream, { status: 200, headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' } });
+    };
+
     // Hybrid: call both if keys exist
     if (mode === 'hybrid' && geminiKey && openaiKey) {
       const [g, o] = await Promise.all([callGemini(), callOpenAI()]);
       const merged = dedupeByContent([...(g.suggestions || []), ...(o.suggestions || [])]);
       if (merged.length > 0) {
+        if (payload.stream) {
+          const first = merged[0]?.content || (language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...');
+          return await streamContent(first, (g.tokens || 0) + (o.tokens || 0));
+        }
         try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: (g.tokens || 0) + (o.tokens || 0) }); } catch {}
         return new Response(JSON.stringify({ suggestions: merged, meta: { provider: 'hybrid', sources: { gemini: (g.suggestions || []).length, openai: (o.suggestions || []).length } } }), { status: 200, headers: corsHeaders });
       }
@@ -261,6 +290,10 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
     if (mode === 'gemini' && geminiKey) {
       const g = await callGemini();
       if (g.suggestions.length > 0) {
+        if (payload.stream) {
+          const first = g.suggestions[0]?.content || (language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...');
+          return await streamContent(first, g.tokens || 0);
+        }
         try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: g.tokens || 0 }); } catch {}
         return new Response(JSON.stringify({ suggestions: g.suggestions, meta: { provider: 'gemini' } }), { status: 200, headers: corsHeaders });
       }
@@ -269,6 +302,10 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
     if (mode === 'openai' && openaiKey) {
       const o = await callOpenAI();
       if (o.suggestions.length > 0) {
+        if (payload.stream) {
+          const first = o.suggestions[0]?.content || (language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...');
+          return await streamContent(first, o.tokens || 0);
+        }
         try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: o.tokens || 0 }); } catch {}
         return new Response(JSON.stringify({ suggestions: o.suggestions, meta: { provider: 'openai' } }), { status: 200, headers: corsHeaders });
       }
@@ -279,6 +316,10 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
     if (geminiKey) {
       const g = await callGemini();
       if (g.suggestions.length > 0) {
+        if (payload.stream) {
+          const first = g.suggestions[0]?.content || (language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...');
+          return await streamContent(first, g.tokens || 0);
+        }
         try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: g.tokens || 0 }); } catch {}
         return new Response(JSON.stringify({ suggestions: g.suggestions, meta: { provider: 'gemini' } }), { status: 200, headers: corsHeaders });
       }
@@ -286,6 +327,10 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
     if (openaiKey) {
       const o = await callOpenAI();
       if (o.suggestions.length > 0) {
+        if (payload.stream) {
+          const first = o.suggestions[0]?.content || (language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...');
+          return await streamContent(first, o.tokens || 0);
+        }
         try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: o.tokens || 0 }); } catch {}
         return new Response(JSON.stringify({ suggestions: o.suggestions, meta: { provider: 'openai' } }), { status: 200, headers: corsHeaders });
       }
@@ -299,7 +344,11 @@ Générez 3 courtes suggestions adaptées (max 25 mots chacune) pour poursuivre 
       ]
     };
     try { await client.from('ai_usage_logs').insert({ user_id: user.id, tokens_used: 0 }); } catch {}
-  return new Response(JSON.stringify({ ...fallback, meta: { provider: 'fallback' } }), { status: 200, headers: corsHeaders });
+    if (payload.stream) {
+      const first = fallback.suggestions[0]?.content || '...';
+      return await streamContent(first, 0);
+    }
+    return new Response(JSON.stringify({ ...fallback, meta: { provider: 'fallback' } }), { status: 200, headers: corsHeaders });
   } catch (e) {
     console.error('ai-suggest error:', e);
     // total failure: return minimal fallback so client UI doesn’t break

@@ -43,6 +43,11 @@ const resources = {
         system: 'Système',
         light: 'Clair',
         dark: 'Sombre'
+      },
+      legal: {
+        privacy: 'Confidentialité',
+        terms: 'Conditions',
+        disclaimers: 'Avertissements'
       }
     },
   },
@@ -87,6 +92,11 @@ const resources = {
         system: 'النظام',
         light: 'فاتح',
         dark: 'داكن'
+      },
+      legal: {
+        privacy: 'سياسة الخصوصية',
+        terms: 'الشروط',
+        disclaimers: 'إخلاء المسؤولية'
       }
     },
   },
@@ -131,6 +141,11 @@ const resources = {
         system: 'System',
         light: 'Light',
         dark: 'Dark'
+      },
+      legal: {
+        privacy: 'Privacy',
+        terms: 'Terms',
+        disclaimers: 'Disclaimers'
       }
     },
   },

@@ -137,7 +137,8 @@ const JournalEditor = ({
   // Expose formatting API to parent via ref
   useImperativeHandle(ref, () => ({
     applyFormat: (action) => {
-      switch (action) {
+      const act = (action || '').replace(/^__format_/, '').replace(/__$/, '');
+      switch (act) {
         case 'bold':
           return applyWrap('**');
         case 'italic':

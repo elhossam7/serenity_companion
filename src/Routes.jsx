@@ -14,11 +14,13 @@ const AiPoweredJournaling = lazy(() => import('./pages/ai-powered-journaling'));
 const ResetPasswordPage = lazy(() => import('./pages/reset-password'));
 const AuthCallback = lazy(() => import('./pages/auth/callback'));
 const DashboardHome = lazy(() => import('./pages/dashboard-home'));
+const ResourceDetails = lazy(() => import('./pages/resources/[id]'));
 const ProfilePage = lazy(() => import('./pages/profile'));
 const SettingsPage = lazy(() => import('./pages/settings'));
 const PolicyPrivacy = lazy(() => import('pages/legal/PolicyPrivacy'));
 const TermsOfService = lazy(() => import('pages/legal/TermsOfService'));
 const Disclaimers = lazy(() => import('pages/legal/Disclaimers'));
+const AiChatSupport = lazy(() => import('./pages/ai-chat-support'));
 
 const Routes = () => {
   const RecoveryRedirect = () => {
@@ -59,8 +61,10 @@ const Routes = () => {
           <Route path="/ai-powered-journaling" element={<AiPoweredJournaling />} />
           <Route path="/mood-tracking-dashboard" element={<MoodTrackingDashboard />} />
           <Route path="/dashboard-home" element={<DashboardHome />} />
+          <Route path="/resources/:id" element={<ResourceDetails />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/ai-chat-support" element={<AiChatSupport />} />
         </Route>
 
         {/* Fallback */}
