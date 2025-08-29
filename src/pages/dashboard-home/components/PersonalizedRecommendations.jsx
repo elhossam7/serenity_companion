@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import ResourceCard from '../../../components/resources/ResourceCard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -115,7 +116,8 @@ const PersonalizedRecommendations = () => {
       color: categoryToColor(r.category),
       category: r.category || (lang === 'ar' ? 'عام' : 'Général'),
       culturalNote: lang === 'ar' ? 'متوافق ثقافياً' : 'Adapté culturellement',
-      _score: score(r)
+      _score: score(r),
+      thumbnail_url: r.thumbnail_url
     }));
     return mapped.sort((a, b) => b._score - a._score);
   };
@@ -157,67 +159,23 @@ const PersonalizedRecommendations = () => {
         </p>
       </div>
       <div className="space-y-4">
-  {recommendations?.map((recommendation, index) => (
-          <div
-            key={recommendation?.id}
-            className="bg-card rounded-xl p-4 border border-border gentle-hover"
-          >
-            <div className="flex items-start space-x-4">
-              <div className={`w-12 h-12 bg-${recommendation?.color}/10 rounded-xl flex items-center justify-center flex-shrink-0`}>
-                <Icon 
-                  name={recommendation?.icon} 
-                  size={20} 
-                  color={`var(--color-${recommendation?.color})`} 
-                />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="text-base font-body font-medium text-foreground mb-1">
-                      {recommendation?.title}
-                    </h3>
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className={`text-xs font-caption px-2 py-1 rounded-full bg-${recommendation?.color}/10 text-${recommendation?.color}`}>
-                        {recommendation?.category}
-                      </span>
-                      <span className="text-xs font-caption text-muted-foreground">
-                        {recommendation?.duration}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <p className="text-sm font-body text-muted-foreground mb-3 leading-relaxed">
-                  {recommendation?.description}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Icon name="Star" size={12} color="var(--color-accent)" />
-                    <span className="text-xs font-caption text-muted-foreground">
-                      {recommendation?.culturalNote}
-                    </span>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRecommendationClick(recommendation)}
-                    iconName="Play"
-                    iconPosition="left"
-                    iconSize={14}
-                    className="text-xs"
-                  >
-                    {t?.tryNow}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+        {recommendations?.map((r) => (
+          <ResourceCard
+            key={r.id}
+            title={r.title}
+            category={r.category}
+            duration={r.duration}
+            description={r.description}
+            icon={r.icon}
+            color={r.color}
+            culturalNote={r.culturalNote}
+            imageUrl={r.thumbnail_url}
+            ctaLabel={t?.tryNow}
+            onClick={() => handleRecommendationClick(r)}
+          />
         ))}
 
-  {/* Premium Upgrade Prompt */}
+        {/* Premium Upgrade Prompt */}
         <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-primary/20">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -225,7 +183,7 @@ const PersonalizedRecommendations = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-body font-medium text-foreground mb-1">
-    {loading ? (language === 'ar' ? 'جاري التحميل...' : 'Chargement...') : t?.unlockMore}
+                {loading ? (language === 'ar' ? 'جاري التحميل...' : 'Chargement...') : t?.unlockMore}
               </h3>
               <p className="text-xs font-caption text-muted-foreground">
                 {t?.premium}

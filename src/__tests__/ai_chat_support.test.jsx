@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -75,12 +76,19 @@ describe('AI Chat Support', () => {
     fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => expect(aiServiceModule.aiService.generateSuggestions).toHaveBeenCalled());
-
     // Find a stored key that matches our chat history pattern
-    const key = Object.keys(localStorage).find(k => k.startsWith('ai_chat_history_v1:'));
-    expect(key).toBeTruthy();
-    const stored = JSON.parse(localStorage.getItem(key));
+    let foundKey = null;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('ai_chat_history_v1:')) {
+        foundKey = k;
+        break;
+      }
+    }
+    expect(foundKey).toBeTruthy();
+    const stored = JSON.parse(localStorage.getItem(foundKey));
     expect(Array.isArray(stored)).toBe(true);
+    expect(stored.length).toBeGreaterThanOrEqual(1);
     expect(stored.length).toBeGreaterThanOrEqual(1);
   });
 });

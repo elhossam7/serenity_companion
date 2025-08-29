@@ -62,7 +62,7 @@ const DashboardHome = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-16 pb-20 md:pb-8">
+      <main className="pt-16 page-container">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Main Content */}

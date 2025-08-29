@@ -10,3 +10,32 @@ body {
   font-family: inherit;
   margin: unset;
 }
+
+/* Mobile-first responsive bottom padding for pages with navigation */
+.page-container {
+  @apply pb-24 sm:pb-32 md:pb-8;
+}
+
+/* Ensure safe area for iOS devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Enhanced responsive bottom navigation */
+.bottom-nav-responsive {
+  height: 4rem; /* 64px on mobile (just main nav) */
+}
+
+@media (min-width: 640px) {
+  .bottom-nav-responsive {
+    height: 7.5rem; /* 120px on larger screens with footer (64px + 48px + padding) */
+  }
+}
+
+@media (min-width: 768px) {
+  .bottom-nav-responsive {
+    display: none; /* Hidden on desktop */
+  }
+}

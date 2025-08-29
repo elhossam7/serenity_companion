@@ -67,8 +67,8 @@ const BottomNavigation = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-navigation bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
-      <div className="flex items-center justify-around h-16 px-4 safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-navigation bg-background/95 backdrop-blur-sm border-t border-border bottom-nav-responsive">
+      <div className="flex items-center justify-around h-16 sm:h-18 px-2 sm:px-4 pb-safe">
         {navigationItems?.map((item) => {
           const isActive = location?.pathname === item?.path;
           
@@ -77,7 +77,7 @@ const BottomNavigation = () => {
               key={item?.path}
               onClick={() => handleNavigation(item?.path)}
               className={`
-                relative flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1
+                relative flex flex-col items-center justify-center min-w-0 flex-1 py-1 sm:py-2 px-1
                 transition-all duration-300 ease-gentle
                 ${isActive 
                   ? 'text-primary' :'text-muted-foreground hover:text-foreground'
@@ -87,7 +87,7 @@ const BottomNavigation = () => {
               <div className="relative">
                 <Icon 
                   name={item?.icon} 
-                  size={20} 
+                  size={18} 
                   color={isActive ? 'var(--color-primary)' : 'currentColor'}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
@@ -97,23 +97,25 @@ const BottomNavigation = () => {
                 )}
               </div>
               <span className={`
-                text-xs font-caption mt-1 truncate w-full text-center
+                text-[10px] sm:text-xs font-caption mt-0.5 sm:mt-1 truncate w-full text-center leading-tight
                 ${isActive ? 'font-medium' : 'font-normal'}
               `}>
                 {item?.label}
               </span>
               {isActive && (
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 sm:w-8 h-0.5 bg-primary rounded-full" />
               )}
             </button>
           );
         })}
       </div>
-      <div className="flex justify-around items-center h-12 px-4 bg-background border-t border-border">
-        <button onClick={() => navigate('/privacy-policy')} className="text-sm text-muted-foreground hover:text-foreground">
+      
+      {/* Footer links - hidden on small screens, compact on larger */}
+      <div className="hidden sm:flex justify-around items-center h-12 px-4 bg-background/50 border-t border-border/50">
+        <button onClick={() => navigate('/privacy-policy')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
           {t.privacy}
         </button>
-        <button onClick={() => navigate('/terms-of-service')} className="text-sm text-muted-foreground hover:text-foreground">
+        <button onClick={() => navigate('/terms-of-service')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
           {t.terms}
         </button>
       </div>
