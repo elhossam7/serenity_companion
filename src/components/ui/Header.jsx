@@ -9,11 +9,11 @@ import { useI18n } from '../../contexts/I18nContext';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, user: authUser, userProfile } = useAuth();
   const { t, i18n } = useTranslation();
   const { setLanguage } = useI18n();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState({ name: 'Utilisateur', avatar: null });
+  const [user, setUser] = useState({ name: 'Utilisateur', avatar: null, email: '', hasProfileName: false });
 
   useEffect(() => {
     // ensure html attrs align when Header mounts (I18nProvider handles ongoing updates)
@@ -21,6 +21,20 @@ const Header = () => {
     document.documentElement?.setAttribute('lang', i18n.language);
     document.documentElement?.setAttribute('dir', dir);
   }, [i18n.language]);
+
+  // Reflect authenticated user name/avatar in the header menu
+  useEffect(() => {
+    const meta = authUser?.user_metadata || {};
+    const profileName = userProfile?.display_name || userProfile?.full_name || meta.display_name || meta.full_name || '';
+    const displayName =
+      profileName ||
+      authUser?.email?.split('@')[0] ||
+      (i18n.language === 'ar' ? 'المستخدم' : i18n.language === 'en' ? 'User' : 'Utilisateur');
+    const avatar = userProfile?.avatar_url || meta.avatar_url || null;
+    const email = authUser?.email || '';
+    const hasProfileName = Boolean(profileName);
+    setUser({ name: displayName, avatar, email, hasProfileName });
+  }, [authUser, userProfile, i18n.language]);
 
   const toggleLanguage = () => {
     const next = i18n.language === 'fr' ? 'ar' : i18n.language === 'ar' ? 'en' : 'fr';
@@ -51,6 +65,9 @@ const Header = () => {
       profile: 'Profil',
       settings: 'Paramètres',
       help: 'Aide',
+      privacy: 'Confidentialité',
+      terms: 'Conditions',
+      disclaimers: 'Avertissements',
       logout: 'Déconnexion',
       language: 'العربية'
     },
@@ -62,6 +79,9 @@ const Header = () => {
       profile: 'الملف الشخصي',
       settings: 'الإعدادات',
       help: 'المساعدة',
+      privacy: 'الخصوصية',
+      terms: 'الشروط',
+      disclaimers: 'إخلاء المسؤولية',
       logout: 'تسجيل الخروج',
       language: 'Français'
     },
@@ -73,8 +93,11 @@ const Header = () => {
       profile: 'Profile',
       settings: 'Settings',
       help: 'Help',
+      privacy: 'Privacy',
+      terms: 'Terms',
+      disclaimers: 'Disclaimers',
       logout: 'Logout',
-      language: i18n.language === 'fr' ? 'العربية' : 'Français'
+      language: i18n.language === 'ar' ? 'Français' : 'العربية'
     }
   }[i18n.language] || {};
 
@@ -112,7 +135,7 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-header bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center">
+  <div className="flex items-center">
           <div 
             onClick={handleLogoClick}
             className="flex items-center space-x-3 cursor-pointer gentle-hover"
@@ -194,14 +217,31 @@ const Header = () => {
               onClick={handleProfileClick}
               className="w-8 h-8 rounded-full bg-secondary/10"
             >
-              <Icon name="User" size={16} color="var(--color-secondary)" />
+              {user?.avatar ? (
+                // Simple avatar circle
+                <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <Icon name="User" size={16} color="var(--color-secondary)" />
+              )}
             </Button>
 
             {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover border border-border rounded-lg shadow-soft-lg z-dropdown animate-slide-down">
+              <div className={`absolute ${i18n.language === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-popover border border-border rounded-lg shadow-soft-lg z-dropdown animate-slide-down`}> 
                 <div className="py-2">
-                  <div className="px-4 py-2 border-b border-border">
-                    <p className="text-sm font-body font-medium text-foreground">{user?.name}</p>
+                  <div className="px-4 py-2 border-b border-border flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center overflow-hidden">
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <Icon name="User" size={16} color="var(--color-secondary)" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-body font-medium text-foreground truncate">{user?.name}</p>
+                      {!user?.hasProfileName && user?.email ? (
+                        <p className="text-[11px] text-muted-foreground truncate" dir="ltr">{user.email}</p>
+                      ) : null}
+                    </div>
                   </div>
                   
                   <Button
@@ -212,7 +252,7 @@ const Header = () => {
                       navigate('/profile');
                     }}
                     iconName="User"
-                    iconPosition="left"
+                    iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
@@ -227,7 +267,7 @@ const Header = () => {
                       navigate('/settings');
                     }}
                     iconName="Settings"
-                    iconPosition="left"
+                    iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
@@ -242,7 +282,7 @@ const Header = () => {
                       // Navigate to help when implemented
                     }}
                     iconName="HelpCircle"
-                    iconPosition="left"
+                    iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                     iconSize={16}
                     className="w-full justify-start px-4 py-2 font-body"
                   >
@@ -255,33 +295,33 @@ const Header = () => {
                       size="sm"
                       onClick={() => { setIsMenuOpen(false); navigate('/privacy'); }}
                       iconName="Shield"
-                      iconPosition="left"
+                      iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                       iconSize={16}
                       className="w-full justify-start px-4 py-2 font-body"
                     >
-                      Privacy
+                      {labels.privacy}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => { setIsMenuOpen(false); navigate('/terms'); }}
                       iconName="FileText"
-                      iconPosition="left"
+                      iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                       iconSize={16}
                       className="w-full justify-start px-4 py-2 font-body"
                     >
-                      Terms
+                      {labels.terms}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => { setIsMenuOpen(false); navigate('/disclaimers'); }}
                       iconName="AlertTriangle"
-                      iconPosition="left"
+                      iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                       iconSize={16}
                       className="w-full justify-start px-4 py-2 font-body"
                     >
-                      Disclaimers
+                      {labels.disclaimers}
                     </Button>
                   </div>
 
@@ -291,7 +331,7 @@ const Header = () => {
                       size="sm"
                       onClick={handleLogout}
                       iconName="LogOut"
-                      iconPosition="left"
+                      iconPosition={i18n.language === 'ar' ? 'right' : 'left'}
                       iconSize={16}
                       className="w-full justify-start px-4 py-2 font-body text-error hover:text-error"
                     >

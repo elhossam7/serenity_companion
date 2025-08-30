@@ -1,27 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const WelcomeSection = () => {
-  const [language, setLanguage] = useState('fr');
+  const { i18n } = useTranslation();
+  const language = i18n.language;
+  const { user, userProfile } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'fr';
-    setLanguage(savedLanguage);
-    
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setUserName(user?.name || '');
-    }
-
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
 
     return () => clearInterval(timer);
   }, []);
+
+  // Compute a consistent display name from profile/metadata/email
+  const displayName = useMemo(() => {
+    const meta = user?.user_metadata || {};
+    const profileName =
+      userProfile?.display_name ||
+      userProfile?.full_name ||
+      meta.display_name ||
+      meta.full_name ||
+      '';
+    const fallback = user?.email?.split('@')[0] || (language === 'ar' ? 'المستخدم' : 'Utilisateur');
+    return profileName || fallback;
+  }, [user, userProfile, language]);
 
   const getGreeting = () => {
     const hour = currentTime?.getHours();
@@ -74,7 +81,7 @@ const WelcomeSection = () => {
           </div>
           <div>
             <h1 className="text-2xl font-heading font-semibold text-foreground">
-              {getGreeting()}{userName && `, ${userName}`}
+              {getGreeting()}{displayName ? `, ${displayName}` : ''}
             </h1>
             <p className="text-sm font-body text-muted-foreground">
               {t?.welcomeBack}
