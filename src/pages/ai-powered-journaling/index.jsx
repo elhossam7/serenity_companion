@@ -27,12 +27,13 @@ const AiPoweredJournaling = () => {
   const editorRef = useRef(null);
 
   useEffect(() => {
-    // Load draft content
-    const draftContent = localStorage.getItem('journal_draft');
+    // Load draft content scoped by user
+    const draftKey = `journal_draft:${user?.id || 'anon'}`;
+    const draftContent = localStorage.getItem(draftKey);
     if (draftContent) {
       setJournalContent(draftContent);
     }
-  }, [navigate, user]);
+  }, [navigate, user?.id]);
 
   useEffect(() => {
     // Handle responsive AI assistant visibility
@@ -87,12 +88,15 @@ const AiPoweredJournaling = () => {
         mood: currentMood,
         isPrivate: isPrivate,
         createdAt: new Date()?.toISOString(),
-        language: language
+        language: language,
+        userId: user?.id || null
       };
-      const existingEntries = JSON.parse(localStorage.getItem('journal_entries') || '[]');
+      const storageKey = `journal_entries:${user?.id || 'anon'}`;
+      const existingEntries = JSON.parse(localStorage.getItem(storageKey) || '[]');
       existingEntries?.unshift(entry);
-      localStorage.setItem('journal_entries', JSON.stringify(existingEntries));
-      localStorage.removeItem('journal_draft');
+      localStorage.setItem(storageKey, JSON.stringify(existingEntries));
+      const draftKey = `journal_draft:${user?.id || 'anon'}`;
+      localStorage.removeItem(draftKey);
       // Notify history panels to refresh and ensure it becomes visible
       try {
         window.dispatchEvent(new CustomEvent('journal:entry:saved', { detail: entry }));
@@ -100,7 +104,7 @@ const AiPoweredJournaling = () => {
       setShowEntryHistory(true);
       setIsSaving(false);
     }, 1500);
-  }, [journalContent, currentMood, isPrivate, language]);
+  }, [journalContent, currentMood, isPrivate, language, user?.id]);
 
   const handleExport = useCallback((format) => {
     const exportData = {
@@ -226,6 +230,7 @@ const AiPoweredJournaling = () => {
                   content={journalContent}
                   onContentChange={handleContentChange}
                   language={language}
+                  userId={user?.id}
                   onMoodDetected={handleMoodDetected}
                 />
               </div>

@@ -22,10 +22,17 @@ const WellnessSnapshot = () => {
     const fetchData = async () => {
       try {
         // Always compute a local streak from localStorage first (works offline/anon)
-        const computeLocalStreak = () => {
+    const computeLocalStreak = () => {
           try {
-            const raw = localStorage.getItem('journal_entries');
-            const list = raw ? JSON.parse(raw) : [];
+      const storageKey = `journal_entries:${user?.id || 'anon'}`;
+            let raw = localStorage.getItem(storageKey);
+            let list = raw ? JSON.parse(raw) : [];
+            if ((!list || list.length === 0) && user?.id) {
+              const legacyRaw = localStorage.getItem('journal_entries');
+              const legacyList = legacyRaw ? JSON.parse(legacyRaw) : [];
+              list = (legacyList || []).filter(e => e?.userId === user?.id);
+              try { localStorage.setItem(storageKey, JSON.stringify(list)); } catch {}
+            }
             const normalized = (list || []).map(e => ({
               created_at: e.createdAt || e.created_at || e.date || new Date().toISOString()
             }));
@@ -85,10 +92,12 @@ const WellnessSnapshot = () => {
     fetchData();
 
     // Live-update streak when a new journal entry is saved from the editor
-    const handleSaved = () => {
+  const handleSaved = (evt) => {
       try {
-        const raw = localStorage.getItem('journal_entries');
-        const list = raw ? JSON.parse(raw) : [];
+    if (evt?.detail?.userId && user?.id && evt.detail.userId !== user.id) return;
+    const storageKey = `journal_entries:${user?.id || 'anon'}`;
+    const raw = localStorage.getItem(storageKey);
+    const list = raw ? JSON.parse(raw) : [];
         const normalized = (list || []).map(e => ({
           created_at: e.createdAt || e.created_at || e.date || new Date().toISOString()
         }));

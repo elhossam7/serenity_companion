@@ -7,7 +7,8 @@ const JournalEditor = ({
   content, 
   onContentChange, 
   language, 
-  onMoodDetected
+  onMoodDetected,
+  userId
 }, ref) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [wordCount, setWordCount] = useState(0);
@@ -46,7 +47,8 @@ const JournalEditor = ({
     }
     
     autoSaveTimeoutRef.current = setTimeout(() => {
-      localStorage.setItem('journal_draft', content);
+      const draftKey = `journal_draft:${userId || 'anon'}`;
+      localStorage.setItem(draftKey, content);
     }, 1500); // Increased delay to reduce performance impact
 
     // Debounced mood detection
@@ -68,7 +70,7 @@ const JournalEditor = ({
         clearTimeout(moodDetectionTimeoutRef?.current);
       }
     };
-  }, [content, onMoodDetected]);
+  }, [content, onMoodDetected, userId]);
 
   // Memoize mood detection function
   const detectMood = useCallback(() => {

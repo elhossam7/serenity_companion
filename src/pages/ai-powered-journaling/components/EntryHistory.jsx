@@ -2,18 +2,29 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
   const [entries, setEntries] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMoodFilter, setSelectedMoodFilter] = useState('all');
   const [filteredEntries, setFilteredEntries] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Load saved journal entries from localStorage
+    // Load saved journal entries from localStorage scoped by user
     try {
-      const raw = localStorage.getItem('journal_entries');
-      const list = raw ? JSON.parse(raw) : [];
+      const storageKey = `journal_entries:${user?.id || 'anon'}`;
+      let raw = localStorage.getItem(storageKey);
+      let list = raw ? JSON.parse(raw) : [];
+      // Fallback: legacy key (pre user scoping) — filter strictly to current user entries
+      if ((!list || list.length === 0) && user?.id) {
+        const legacyRaw = localStorage.getItem('journal_entries');
+        const legacyList = legacyRaw ? JSON.parse(legacyRaw) : [];
+        list = (legacyList || []).filter(e => e?.userId === user?.id);
+        // Migrate to namespaced storage to prevent future mixing
+        try { localStorage.setItem(storageKey, JSON.stringify(list)); } catch (_) {}
+      }
       const normalized = (list || []).map(e => ({
         id: e.id,
         date: new Date(e.createdAt || e.date || Date.now()),
@@ -30,10 +41,19 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
       setFilteredEntries([]);
     }
 
-    const onSaved = () => {
+    const onSaved = (evt) => {
       try {
-        const raw = localStorage.getItem('journal_entries');
-        const list = raw ? JSON.parse(raw) : [];
+        // Ignore updates for other users
+        if (evt?.detail?.userId && user?.id && evt.detail.userId !== user.id) return;
+        const storageKey = `journal_entries:${user?.id || 'anon'}`;
+        const raw = localStorage.getItem(storageKey);
+        let list = raw ? JSON.parse(raw) : [];
+        if ((!list || list.length === 0) && user?.id) {
+          const legacyRaw = localStorage.getItem('journal_entries');
+          const legacyList = legacyRaw ? JSON.parse(legacyRaw) : [];
+          list = (legacyList || []).filter(e => e?.userId === user?.id);
+          try { localStorage.setItem(storageKey, JSON.stringify(list)); } catch (_) {}
+        }
         const normalized = (list || []).map(e => ({
           id: e.id,
           date: new Date(e.createdAt || e.date || Date.now()),
@@ -53,7 +73,7 @@ const EntryHistory = ({ language, isVisible, onToggle, onEntrySelect }) => {
 
     window.addEventListener('journal:entry:saved', onSaved);
     return () => window.removeEventListener('journal:entry:saved', onSaved);
-  }, [language]);
+  }, [language, user?.id]);
 
   useEffect(() => {
     let filtered = entries;
